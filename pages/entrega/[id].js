@@ -405,81 +405,114 @@ export default function Entrega() {
 
       const canvas = document.createElement('canvas');
       canvas.width = 1080;
-      canvas.height = 1350;
+      canvas.height = 1450;
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('Seu navegador não conseguiu gerar o cartão.');
 
       const fundo = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      fundo.addColorStop(0, '#FFFDF8');
-      fundo.addColorStop(1, '#F2E6D7');
+      fundo.addColorStop(0, '#FFFEFB');
+      fundo.addColorStop(1, '#F6EFE4');
       ctx.fillStyle = fundo;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Moldura externa.
-      ctx.strokeStyle = '#D99B54';
-      ctx.lineWidth = 5;
-      caminhoArredondado(ctx, 34, 34, 1012, 1282, 38);
+      // Base do cartão.
+      ctx.save();
+      ctx.shadowColor = 'rgba(53,48,43,.12)';
+      ctx.shadowBlur = 34;
+      ctx.shadowOffsetY = 14;
+      ctx.fillStyle = '#FFFDF9';
+      caminhoArredondado(ctx, 48, 48, 984, 1354, 42);
+      ctx.fill();
+      ctx.restore();
+
+      // Moldura externa e interna.
+      ctx.strokeStyle = '#D9A86A';
+      ctx.lineWidth = 4;
+      caminhoArredondado(ctx, 62, 62, 956, 1326, 34);
       ctx.stroke();
-      ctx.strokeStyle = 'rgba(217,155,84,.25)';
+      ctx.strokeStyle = 'rgba(217,168,106,.28)';
       ctx.lineWidth = 2;
-      caminhoArredondado(ctx, 52, 52, 976, 1246, 30);
+      caminhoArredondado(ctx, 76, 76, 928, 1298, 28);
       ctx.stroke();
+
+      // Cantos decorativos.
+      ctx.fillStyle = '#D9656A';
+      ctx.font = '700 24px "Nunito Sans", Arial, sans-serif';
+      ctx.fillText('♡', 100, 102);
+      ctx.fillText('♡', 956, 102);
+      ctx.fillText('♡', 100, 1366);
+      ctx.fillText('♡', 956, 1366);
 
       // Marca e título.
       ctx.textAlign = 'center';
       ctx.fillStyle = '#D9656A';
       ctx.font = '700 25px "Nunito Sans", Arial, sans-serif';
-      ctx.letterSpacing = '8px';
-      ctx.fillText('E T E R N I Z E', 540, 102);
-      ctx.letterSpacing = '0px';
+      ctx.fillText('E T E R N I Z E', 540, 136);
+      ctx.fillRect(405, 182, 110, 2);
+      ctx.fillText('♥', 540, 192);
+      ctx.fillRect(565, 182, 110, 2);
 
-      ctx.fillStyle = '#3B3028';
-      ctx.font = '500 47px Fraunces, Georgia, serif';
-      ctx.fillText('Feliz Dia dos', 540, 172);
-      ctx.fillStyle = '#D9656A';
-      ctx.font = '600 82px Fraunces, Georgia, serif';
-      ctx.fillText('Pais', 540, 254);
+      ctx.fillStyle = '#2E2621';
+      ctx.font = '500 78px Fraunces, Georgia, serif';
+      ctx.fillText('Feliz Dia dos', 540, 288);
+      ctx.fillStyle = '#E16F67';
+      ctx.font = '600 108px Fraunces, Georgia, serif';
+      ctx.fillText('Pais', 540, 390);
 
-      ctx.fillStyle = '#8A7564';
-      ctx.font = '700 25px "Nunito Sans", Arial, sans-serif';
       const nome = String(pedido.nomePai || 'Pai').trim();
-      ctx.fillText(`Uma homenagem para ${nome}`, 540, 300);
+      ctx.fillStyle = '#7E6B5E';
+      ctx.font = '700 30px "Nunito Sans", Arial, sans-serif';
+      ctx.fillText(`Uma homenagem para ${nome}`, 540, 442);
 
-      // Foto principal.
+      // Bloco da foto principal.
       ctx.save();
-      ctx.shadowColor = 'rgba(53,48,43,.22)';
-      ctx.shadowBlur = 28;
-      ctx.shadowOffsetY = 14;
+      ctx.shadowColor = 'rgba(53,48,43,.14)';
+      ctx.shadowBlur = 24;
+      ctx.shadowOffsetY = 10;
       ctx.fillStyle = '#FFFFFF';
-      caminhoArredondado(ctx, 105, 342, 870, 545, 28);
+      caminhoArredondado(ctx, 130, 500, 820, 460, 30);
       ctx.fill();
       ctx.restore();
-      desenharCover(ctx, foto, 125, 362, 830, 505, 20);
+      ctx.strokeStyle = '#E2B27D';
+      ctx.lineWidth = 3;
+      caminhoArredondado(ctx, 130, 500, 820, 460, 30);
+      ctx.stroke();
+      desenharCover(ctx, foto, 148, 518, 784, 424, 22);
 
-      // Mensagem.
+      // Frase curta.
       ctx.fillStyle = '#D9656A';
-      ctx.font = '700 30px "Nunito Sans", Arial, sans-serif';
-      ctx.fillText('♥', 540, 936);
-      ctx.fillStyle = '#3B3028';
-      ctx.font = '500 35px Fraunces, Georgia, serif';
-      const linhas = linhasDoTexto(ctx, fraseCurta(pedido.mensagemCartao), 760, 3);
-      const inicioY = 988 - ((linhas.length - 1) * 22);
-      linhas.forEach((linha, indice) => ctx.fillText(linha, 540, inicioY + indice * 48));
+      ctx.font = '700 28px "Nunito Sans", Arial, sans-serif';
+      ctx.fillRect(320, 1016, 140, 2);
+      ctx.fillText('♥', 540, 1026);
+      ctx.fillRect(620, 1016, 140, 2);
 
-      // QR Code.
+      ctx.fillStyle = '#4A3E35';
+      ctx.font = '500 34px Fraunces, Georgia, serif';
+      const linhas = linhasDoTexto(ctx, fraseCurta(pedido.mensagemCartao), 760, 3);
+      const inicioY = 1084 - ((linhas.length - 1) * 20);
+      linhas.forEach((linha, indice) => ctx.fillText(linha, 540, inicioY + indice * 46));
+
+      // QR Code alinhado e com folga.
+      const qrBoxX = 395;
+      const qrBoxY = 1132;
+      const qrBoxSize = 290;
       ctx.save();
-      ctx.shadowColor = 'rgba(53,48,43,.16)';
-      ctx.shadowBlur = 20;
+      ctx.shadowColor = 'rgba(53,48,43,.12)';
+      ctx.shadowBlur = 18;
       ctx.shadowOffsetY = 8;
       ctx.fillStyle = '#FFFFFF';
-      caminhoArredondado(ctx, 415, 1070, 250, 250, 22);
+      caminhoArredondado(ctx, qrBoxX, qrBoxY, qrBoxSize, qrBoxSize, 24);
       ctx.fill();
       ctx.restore();
-      ctx.drawImage(qrCode, 430, 1085, 220, 220);
+      ctx.strokeStyle = '#E5B98D';
+      ctx.lineWidth = 2;
+      caminhoArredondado(ctx, qrBoxX, qrBoxY, qrBoxSize, qrBoxSize, 24);
+      ctx.stroke();
+      ctx.drawImage(qrCode, qrBoxX + 25, qrBoxY + 25, 240, 240);
 
       ctx.fillStyle = '#7B6A5C';
-      ctx.font = '700 22px "Nunito Sans", Arial, sans-serif';
-      ctx.fillText('Escaneie para abrir a homenagem', 540, 1330);
+      ctx.font = '700 24px "Nunito Sans", Arial, sans-serif';
+      ctx.fillText('Escaneie para abrir a homenagem', 540, 1400);
 
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
       if (!blob) throw new Error('Não foi possível finalizar o cartão.');
