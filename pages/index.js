@@ -75,6 +75,100 @@ function youtubeValido(url) {
   return /(?:youtube\.com\/(?:watch\?.*v=|embed\/|shorts\/)|youtu\.be\/)[\w-]{11}/i.test(url || '');
 }
 
+
+function mostrarEsperaNoCheckout(aba) {
+  if (!aba) return;
+
+  try {
+    aba.document.open();
+    aba.document.write(`<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Preparando seu checkout...</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #F4EDE1;
+      color: #35302B;
+      font-family: "Nunito Sans", sans-serif;
+    }
+    .card {
+      width: min(430px, 100%);
+      padding: 46px 34px 38px;
+      text-align: center;
+      background: #FBF8F2;
+      border: 1px solid rgba(217, 155, 84, .18);
+      border-radius: 28px;
+      box-shadow: 0 22px 65px rgba(53, 48, 43, .12);
+    }
+    .brand {
+      margin-bottom: 23px;
+      color: #D99B54;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .32em;
+      text-transform: uppercase;
+    }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 24px;
+      border: 4px solid #EEDFCB;
+      border-top-color: #D99B54;
+      border-radius: 50%;
+      animation: girar .8s linear infinite;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-family: "Fraunces", serif;
+      font-size: clamp(30px, 8vw, 40px);
+      font-weight: 500;
+      line-height: 1.08;
+    }
+    p {
+      margin: 0;
+      color: #948A7C;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .note {
+      margin-top: 25px;
+      padding: 12px 16px;
+      background: #F4EDE1;
+      border-radius: 14px;
+      color: #7E7468;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    @keyframes girar { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="brand">Eternize</div>
+    <div class="spinner" aria-hidden="true"></div>
+    <h1>Preparando seu checkout...</h1>
+    <p>Estamos salvando sua homenagem.<br />Só mais alguns segundos.</p>
+    <div class="note">Não feche esta página.</div>
+  </main>
+</body>
+</html>`);
+    aba.document.close();
+  } catch (_) {
+    // Caso o navegador impeça a escrita, o redirecionamento ainda acontece normalmente.
+  }
+}
+
 function hojeLocalIso() {
   const hoje = new Date();
   const ano = hoje.getFullYear();
@@ -152,6 +246,7 @@ export default function Home() {
 
     // Mantém a página de entrega aberta e envia o checkout para outra aba.
     const checkoutTab = window.open('about:blank', '_blank');
+    mostrarEsperaNoCheckout(checkoutTab);
 
     try {
       const resposta = await fetch('/api/criar-pedido', {
