@@ -1,91 +1,194 @@
-/**
- * pages/api/webhook/wiapy.js
- * O "telefonema" da Wiapy chega aqui — agora como FUNÇÃO SERVERLESS da Vercel.
- * (sobe, roda e desliga a cada chamada; por isso o estado vive no Supabase, não na memória)
- */
-
-import { createClient } from '@supabase/supabase-js';
 import QRCode from 'qrcode';
+import { supabaseAdmin } from '../../../lib/supabase';
 
-// Chave SERVICE ROLE: só no servidor, NUNCA exposta no front.
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+const BASE_URL = (process.env.BASE_URL || '').replace(/\/$/, '');
+const WIAPY_TOKEN = process.env.WIAPY_WEBHOOK_TOKEN || '';
+const ID_PRINCIPAL = process.env.WIAPY_ID_PRINCIPAL || '';
+
+const BUMPS = Object.fromEntries(
+  [
+    [process.env.WIAPY_ID_BUMP_AUDIO, 'tem_audio'],
+    [process.env.WIAPY_ID_BUMP_VITAL, 'vitalicio'],
+    [process.env.WIAPY_ID_BUMP_VIDEO, 'tem_video'],
+    [process.env.WIAPY_ID_BUMP_CARTAO, 'cartao_premium'],
+  ].filter(([id]) => Boolean(id))
 );
 
-const BASE_URL    = process.env.BASE_URL || 'https://seuprojeto.vercel.app';
-const WIAPY_TOKEN = process.env.WIAPY_WEBHOOK_TOKEN;
-const ID_PRINCIPAL = process.env.WIAPY_ID_PRINCIPAL;
+function tokenRecebido(req) {
+  const valor = String(req.headers.authorization || req.headers['x-webhook-token'] || '').trim();
+  return valor.toLowerCase().startsWith('bearer ') ? valor.slice(7).trim() : valor;
+}
 
-// De ID-do-bump (na Wiapy) -> nome do "interruptor" no registro:
-const BUMPS = {
-  [process.env.WIAPY_ID_BUMP_AUDIO]:  'tem_audio',
-  [process.env.WIAPY_ID_BUMP_VITAL]:  'vitalicio',
-  [process.env.WIAPY_ID_BUMP_VIDEO]:  'tem_video',
-  [process.env.WIAPY_ID_BUMP_CARTAO]: 'cartao_premium',
-};
+function dataIso(valor) {
+  const data = valor ? new Date(valor) : new Date();
+  return Number.isNaN(data.getTime()) ? new Date().toISOString() : data.toISOString();
+}
+
+function somarUmAno(dataIsoString) {
+  const data = new Date(dataIsoString);
+  data.setUTCFullYear(data.getUTCFullYear() + 1);
+  return data.toISOString();
+}
+
+async function jaProcessado(txId) {
+  const { data, error } = await supabaseAdmin
+    .from('webhooks_processados')
+    .select('tx_id')
+    .eq('tx_id', txId)
+    .maybeSingle();
+  if (error) throw error;
+  return Boolean(data);
+}
+
+async function marcarProcessado(txId) {
+  const { error } = await supabaseAdmin.from('webhooks_processados').insert({ tx_id: txId });
+  if (error && error.code !== '23505') throw error;
+}
+
+async function localizarPedido(pedidoId, paymentId) {
+  if (pedidoId) {
+    const { data, error } = await supabaseAdmin
+      .from('pedidos')
+      .select('id,pago,pago_em,vitalicio,expira_em')
+      .eq('id', pedidoId)
+      .maybeSingle();
+    if (error) throw error;
+    if (data) return data;
+  }
+
+  if (paymentId) {
+    const { data, error } = await supabaseAdmin
+      .from('pedidos')
+      .select('id,pago,pago_em,vitalicio,expira_em')
+      .eq('wiapy_payment_id', paymentId)
+      .maybeSingle();
+    if (error) throw error;
+    if (data) return data;
+  }
+
+  return null;
+}
 
 export default async function handler(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') return res.status(405).send('use POST');
 
   try {
+    if (!WIAPY_TOKEN || !ID_PRINCIPAL || !BASE_URL) {
+      throw new Error('Variáveis obrigatórias da Wiapy não configuradas.');
+    }
+
+    if (tokenRecebido(req) !== WIAPY_TOKEN) {
+      return res.status(401).send('token invalido');
+    }
+
     const evento = req.body || {};
-
-    // 1) É a Wiapy mesmo?
-    const token = req.headers['x-webhook-token'] || evento.token;
-    if (token !== WIAPY_TOKEN) return res.status(401).send('token invalido');
-
-    // 2) Só reage a pagamento APROVADO.  >> confirme o status exato na Wiapy <<
-    const status = String(evento.status || evento.payment_status || '').toLowerCase();
-    if (!['approved', 'aprovado', 'paid', 'pago'].includes(status)) {
-      return res.status(200).send('ok (ignorado: nao aprovado)');
-    }
-
-    // 3) De QUAL página é? O pedidoId foi levado ao checkout e volta aqui.
-    //    >> confirme onde a Wiapy devolve isso (tracking/utm_content/metadata) <<
-    const pedidoId =
-      evento?.tracking?.pedido_id ||
+    const pagamento = evento.payment || {};
+    const status = String(pagamento.status || evento.status || evento.payment_status || '').toLowerCase();
+    const paymentId = String(pagamento.id || evento.transaction_id || evento.id || '');
+    const pedidoIdRastreado = String(
       evento?.tracking?.utm_content ||
-      evento?.metadata?.pedido_id;
-    if (!pedidoId) {
-      console.error('Webhook sem pedidoId:', JSON.stringify(evento));
-      return res.status(200).send('ok (sem pedidoId)');
+      evento?.tracking?.pedido_id ||
+      evento?.metadata?.pedido_id ||
+      ''
+    ).trim();
+
+    // Eventos que ainda não alteram o acesso.
+    if (['unpaid', 'credit_card_declined', 'pending', 'recused', 'recusado'].includes(status)) {
+      return res.status(200).send('ok (ignorado)');
     }
 
-    // 4) Idempotência via tabela (serverless não guarda nada em memória).
-    const txId = String(evento.transaction_id || evento.id || `${pedidoId}-${status}`);
-    const { data: jaFeito } = await supabase
-      .from('webhooks_processados').select('tx_id').eq('tx_id', txId).maybeSingle();
-    if (jaFeito) return res.status(200).send('ok (ja processado)');
-
-    // 5) Lista do que foi comprado (principal + bumps).
-    const produtos = evento.products || [];
-    const ids = produtos.map(p => String(p.id ?? p.product_id ?? p.codigo));
-
-    // 6) Monta os interruptores.
-    const upd = {};
-    if (ids.includes(String(ID_PRINCIPAL))) {
-      upd.pago = true; upd.pago_em = new Date().toISOString();
-    }
-    for (const id of ids) if (BUMPS[id]) upd[BUMPS[id]] = true;
-    if (Object.keys(upd).length && !upd.pago) {
-      upd.pago = true; upd.pago_em = new Date().toISOString();
+    if (!['paid', 'refunded', 'chargedback'].includes(status)) {
+      return res.status(200).send('ok (status desconhecido ignorado)');
     }
 
-    // 7) Gera link + QR (só agora, após o pagamento).
-    const link = `${BASE_URL}/p/${pedidoId}`;
-    upd.link = link;
-    upd.qr_code = await QRCode.toDataURL(link, { margin: 1, width: 600 });
+    const pedido = await localizarPedido(pedidoIdRastreado, paymentId);
+    if (!pedido) {
+      console.error('Webhook sem pedido correspondente:', { paymentId, pedidoIdRastreado, status });
+      return res.status(404).send('pedido nao encontrado');
+    }
 
-    // 8) Grava no registro + marca a transação como processada.
-    await supabase.from('pedidos').update(upd).eq('id', pedidoId);
-    await supabase.from('webhooks_processados').insert({ tx_id: txId });
+    // O mesmo pagamento pode gerar eventos paid, refunded e chargedback.
+    const txId = `${paymentId || pedido.id}:${status}`;
+    if (await jaProcessado(txId)) return res.status(200).send('ok (ja processado)');
 
-    // 9) (opcional) disparar aqui o e-mail de entrega com link + QR.
+    if (status === 'refunded' || status === 'chargedback') {
+      const { error } = await supabaseAdmin
+        .from('pedidos')
+        .update({
+          pago: false,
+          status_pagamento: status,
+          link: null,
+          qr_code: null,
+        })
+        .eq('id', pedido.id);
+      if (error) throw error;
 
+      await marcarProcessado(txId);
+      return res.status(200).send('ok');
+    }
+
+    const produtos = Array.isArray(evento.products) ? evento.products : [];
+    const idsComprados = produtos
+      .map((produto) => String(produto?.id ?? produto?.product_id ?? produto?.codigo ?? ''))
+      .filter(Boolean);
+
+    const comprouPrincipal = idsComprados.includes(String(ID_PRINCIPAL));
+    const bumpsComprados = idsComprados.filter((id) => BUMPS[id]);
+
+    // Aceita um pagamento separado apenas se for bump/upsell de um pedido já pago.
+    if (!comprouPrincipal && !(pedido.pago && bumpsComprados.length)) {
+      console.error('Pagamento sem produto principal reconhecido:', { paymentId, idsComprados });
+      return res.status(422).send('produto principal nao reconhecido');
+    }
+
+    const pagoEm = dataIso(pagamento.dt_update || pagamento.dt_create);
+    const atualizacoes = {
+      pago: true,
+      pago_em: pedido.pago ? undefined : pagoEm,
+      status_pagamento: 'paid',
+      wiapy_payment_id: paymentId || null,
+      cliente_email: evento?.customer?.email || undefined,
+    };
+
+    for (const id of bumpsComprados) atualizacoes[BUMPS[id]] = true;
+
+    const vitalicio = pedido.vitalicio || bumpsComprados.some((id) => BUMPS[id] === 'vitalicio');
+    atualizacoes.vitalicio = vitalicio;
+    atualizacoes.expira_em = vitalicio
+      ? null
+      : pedido.pago && pedido.expira_em
+        ? pedido.expira_em
+        : somarUmAno(pedido.pago_em || pagoEm);
+
+    const link = `${BASE_URL}/p/${pedido.id}`;
+    atualizacoes.link = link;
+    atualizacoes.qr_code = await QRCode.toDataURL(link, {
+      margin: 1,
+      width: 600,
+      errorCorrectionLevel: 'M',
+    });
+
+    // Remove propriedades indefinidas para não apagar valores existentes.
+    Object.keys(atualizacoes).forEach((chave) => {
+      if (atualizacoes[chave] === undefined) delete atualizacoes[chave];
+    });
+
+    const { data: atualizado, error: updateError } = await supabaseAdmin
+      .from('pedidos')
+      .update(atualizacoes)
+      .eq('id', pedido.id)
+      .select('id')
+      .maybeSingle();
+
+    if (updateError) throw updateError;
+    if (!atualizado) throw new Error('Pedido não foi atualizado.');
+
+    await marcarProcessado(txId);
     return res.status(200).send('ok');
-  } catch (err) {
-    console.error('Erro no webhook Wiapy:', err);
-    return res.status(200).send('ok (erro logado)'); // evita reenvio infinito
+  } catch (error) {
+    console.error('Erro no webhook Wiapy:', error);
+    // Não confirma um erro interno como sucesso; permite uma nova tentativa do provedor.
+    return res.status(500).send('erro interno');
   }
 }

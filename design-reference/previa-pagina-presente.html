@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prévia — Página Presente (Dia dos Pais)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#17111f;
+    --bg2:#2a1e33;
+    --ink:#F4ECE0;
+    --muted:#B6A6B6;
+    --gold:#EBB865;
+    --gold-2:#F0C88A;
+    --rose:#D98C7A;
+    --frame:#F4ECE0;
+    --lock:#120d18;
+    --display:'Fraunces',Georgia,serif;
+    --body:'Nunito Sans',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#0d0912}
+  body{
+    font-family:var(--body);
+    color:var(--ink);
+    display:flex;justify-content:center;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* phone stage */
+  .phone{
+    width:100%;max-width:430px;
+    background:
+      radial-gradient(120% 60% at 50% -5%, rgba(235,184,101,.20), transparent 60%),
+      linear-gradient(180deg,var(--bg2) 0%, var(--bg) 42%, var(--bg) 100%);
+    position:relative;overflow-x:hidden;
+    box-shadow:0 0 80px rgba(0,0,0,.6);
+  }
+
+  /* preview mode ribbon */
+  .ribbon{
+    position:sticky;top:0;z-index:40;
+    background:rgba(18,13,24,.82);backdrop-filter:blur(8px);
+    border-bottom:1px solid rgba(235,184,101,.22);
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:9px 14px;font-size:12.5px;letter-spacing:.04em;color:var(--gold-2);
+    font-weight:700;text-transform:uppercase;
+  }
+  .ribbon .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold)}
+
+  section{padding:52px 26px}
+  .reveal{opacity:0;transform:translateY(18px);animation:up .9s ease forwards}
+  .d1{animation-delay:.15s}.d2{animation-delay:.4s}.d3{animation-delay:.65s}.d4{animation-delay:.9s}
+  @keyframes up{to{opacity:1;transform:none}}
+
+  .eyebrow{
+    font-size:12px;letter-spacing:.34em;text-transform:uppercase;
+    color:var(--gold);font-weight:800;margin-bottom:18px;
+  }
+
+  /* HERO */
+  .hero{padding-top:46px;text-align:center;min-height:88vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .hero h1{
+    font-family:var(--display);font-weight:600;
+    font-size:clamp(34px,10vw,46px);line-height:1.04;
+    letter-spacing:-.01em;
+  }
+  .hero h1 em{font-style:italic;color:var(--gold-2)}
+  .photo{
+    background:var(--frame);border-radius:14px;padding:10px 10px 40px;
+    box-shadow:0 22px 50px rgba(0,0,0,.45);
+    transform:rotate(-2.4deg);
+  }
+  .photo .img{
+    width:210px;height:210px;border-radius:6px;
+    display:flex;align-items:flex-end;justify-content:center;
+    color:rgba(60,40,30,.55);font-weight:700;font-size:12.5px;letter-spacing:.05em;
+    padding-bottom:14px;
+  }
+  .ph-a{background:linear-gradient(150deg,#c9b7a3,#8a7a86)}
+  .ph-b{background:linear-gradient(150deg,#b7a3ad,#7d8a9a)}
+  .ph-c{background:linear-gradient(150deg,#c7b199,#9a8778)}
+  .photo .cap{margin-top:14px;font-family:var(--display);font-style:italic;color:#5a4a52;font-size:14px}
+  .hero .photo{margin:30px 0 26px}
+
+  .music{
+    display:inline-flex;align-items:center;gap:11px;
+    background:rgba(244,236,224,.06);border:1px solid rgba(244,236,224,.14);
+    padding:9px 16px 9px 13px;border-radius:100px;font-size:13px;color:var(--ink);
+  }
+  .eq{display:flex;align-items:flex-end;gap:2.5px;height:15px}
+  .eq span{width:3px;background:var(--gold);border-radius:2px;animation:bounce 1s ease-in-out infinite}
+  .eq span:nth-child(2){animation-delay:.2s}.eq span:nth-child(3){animation-delay:.4s}.eq span:nth-child(4){animation-delay:.15s}
+  @keyframes bounce{0%,100%{height:4px}50%{height:15px}}
+  .music b{color:var(--gold-2);font-weight:700}
+
+  .scrollcue{margin-top:40px;color:var(--muted);font-size:12px;letter-spacing:.2em;text-transform:uppercase}
+  .scrollcue .arrow{display:block;margin:10px auto 0;width:1px;height:34px;background:linear-gradient(var(--gold),transparent)}
+
+  /* COUNTER */
+  .counter{text-align:center;border-top:1px solid rgba(244,236,224,.08)}
+  .counter .num{
+    font-family:var(--display);font-weight:600;color:var(--gold-2);
+    font-size:clamp(56px,17vw,78px);line-height:1;letter-spacing:-.02em;
+    text-shadow:0 0 34px rgba(235,184,101,.28);
+  }
+  .counter .lbl{margin-top:14px;font-size:17px;color:var(--ink);font-weight:600}
+  .counter .sub{margin-top:6px;color:var(--muted);font-size:13.5px}
+
+  /* GALLERY */
+  .gallery{text-align:center}
+  .gallery h2{font-family:var(--display);font-weight:500;font-size:26px;margin-bottom:6px}
+  .gallery p.k{color:var(--muted);font-size:14px;margin-bottom:30px}
+  .strip{display:flex;gap:16px;justify-content:center}
+  .strip .photo{transform:rotate(2deg) scale(.92)}
+  .strip .photo:first-child{transform:rotate(-3deg) scale(.92)}
+  .strip .img{width:120px;height:120px}
+
+  /* LOCK ZONE */
+  .locked-wrap{position:relative}
+  .locked{filter:blur(7px);opacity:.5;pointer-events:none;user-select:none}
+  .lockcard{
+    position:absolute;left:50%;top:38px;transform:translateX(-50%);
+    width:min(360px,86%);z-index:20;text-align:center;
+    background:linear-gradient(180deg,#241a2e,#191120);
+    border:1px solid rgba(235,184,101,.4);border-radius:20px;
+    padding:30px 24px 28px;
+    box-shadow:0 26px 60px rgba(0,0,0,.6);
+  }
+  .seal{
+    width:52px;height:52px;margin:0 auto 16px;border-radius:50%;
+    background:radial-gradient(circle at 40% 35%,var(--gold-2),var(--gold) 60%,#b98a3e);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 20px rgba(235,184,101,.4);
+  }
+  .seal svg{width:24px;height:24px}
+  .lockcard h3{font-family:var(--display);font-weight:600;font-size:22px;line-height:1.15;margin-bottom:10px}
+  .lockcard p{color:var(--muted);font-size:14px;line-height:1.55;margin-bottom:8px}
+  .unlocks{list-style:none;margin:16px 0 22px;text-align:left;display:inline-block}
+  .unlocks li{font-size:14px;color:var(--ink);padding:5px 0 5px 26px;position:relative}
+  .unlocks li::before{content:"";position:absolute;left:0;top:8px;width:15px;height:15px;border-radius:50%;
+    background:rgba(235,184,101,.18);}
+  .unlocks li::after{content:"";position:absolute;left:5px;top:11px;width:5px;height:8px;border:2px solid var(--gold);border-top:0;border-left:0;transform:rotate(42deg)}
+  .cta{
+    display:block;width:100%;border:0;cursor:pointer;
+    background:linear-gradient(180deg,var(--gold-2),var(--gold));
+    color:#3a2607;font-family:var(--body);font-weight:800;font-size:16px;
+    padding:15px;border-radius:12px;letter-spacing:.01em;
+    box-shadow:0 10px 26px rgba(235,184,101,.32);
+    transition:transform .15s ease;
+  }
+  .cta:hover{transform:translateY(-2px)}
+  .price{margin-top:12px;font-size:13px;color:var(--muted)}
+  .price b{color:var(--ink);font-weight:800}
+
+  /* behind-lock filler content */
+  .letter{text-align:center;max-width:340px;margin:0 auto}
+  .letter .k{color:var(--gold);font-size:12px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:18px}
+  .letter p{font-family:var(--display);font-style:italic;font-size:18px;line-height:1.6;color:var(--ink)}
+  .closing{text-align:center;padding-bottom:70px}
+  .closing h2{font-family:var(--display);font-weight:600;font-size:30px}
+  .closing h2 em{color:var(--gold-2);font-style:italic}
+
+  .toast{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);
+    background:#241a2e;border:1px solid rgba(235,184,101,.35);color:var(--ink);
+    padding:13px 20px;border-radius:12px;font-size:13.5px;max-width:88%;text-align:center;
+    opacity:0;transition:all .35s ease;z-index:60;box-shadow:0 14px 40px rgba(0,0,0,.5)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media (prefers-reduced-motion:reduce){
+    .reveal{animation:none;opacity:1;transform:none}
+    .eq span{animation:none;height:10px}
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+
+    <div class="ribbon"><span class="dot"></span> Modo prévia · antes do pagamento</div>
+
+    <!-- 1. ABERTURA -->
+    <section class="hero">
+      <div class="eyebrow reveal d1">Uma surpresa para você</div>
+      <h1 class="reveal d2">Feliz Dia dos Pais,<br><em>Seu João</em></h1>
+      <div class="photo reveal d3">
+        <div class="img ph-a">foto do pai</div>
+        <div class="cap">o nosso começo</div>
+      </div>
+      <div class="music reveal d4">
+        <span class="eq"><span></span><span></span><span></span><span></span></span>
+        tocando <b>Meu Primeiro Amor</b>
+      </div>
+      <div class="scrollcue reveal d4">deslize<span class="arrow"></span></div>
+    </section>
+
+    <!-- 2. CONTADOR -->
+    <section class="counter">
+      <div class="eyebrow">nossa história</div>
+      <div class="num" id="count">9.862</div>
+      <div class="lbl">dias sendo o meu herói</div>
+      <div class="sub">e cada um deles valeu a pena</div>
+    </section>
+
+    <!-- 3. RETROSPECTIVA -->
+    <section class="gallery">
+      <div class="eyebrow">momentos</div>
+      <h2>De lá pra cá</h2>
+      <p class="k">os instantes que ficaram guardados</p>
+      <div class="strip">
+        <div class="photo"><div class="img ph-b">foto</div></div>
+        <div class="photo"><div class="img ph-c">foto</div></div>
+      </div>
+    </section>
+
+    <!-- LOCK ZONE: preview shows only a piece -->
+    <div class="locked-wrap">
+      <div class="lockcard">
+        <div class="seal">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M6 10V8a6 6 0 0 1 12 0v2" stroke="#3a2607" stroke-width="2" stroke-linecap="round"/><rect x="4.5" y="10" width="15" height="10.5" rx="2.4" fill="#3a2607"/></svg>
+        </div>
+        <h3>Continue a homenagem</h3>
+        <p>Você viu só o começo. O resto está guardado pro Seu João.</p>
+        <ul class="unlocks">
+          <li>A retrospectiva completa com todas as fotos</li>
+          <li>A carta que você escreveu pra ele</li>
+          <li>A música tocando do início ao fim</li>
+          <li>Seu link e seu QR Code pra presentear</li>
+        </ul>
+        <button class="cta" id="cta">Desbloquear e receber meu QR Code</button>
+        <div class="price">pagamento único de <b>R$ 27</b> · acesso por 1 ano</div>
+      </div>
+
+      <!-- everything below is blurred behind the lock -->
+      <div class="locked" aria-hidden="true">
+        <section class="letter">
+          <div class="k">a carta</div>
+          <p>"Pai, se hoje eu ando com meus próprios pés é porque um dia você segurou minha mão. Obrigado por cada..."</p>
+        </section>
+        <section class="gallery">
+          <div class="strip">
+            <div class="photo"><div class="img ph-a">foto</div></div>
+            <div class="photo"><div class="img ph-b">foto</div></div>
+          </div>
+        </section>
+        <section class="closing">
+          <h2>Te amo, <em>pai</em>.</h2>
+        </section>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast">No produto real, este botão abre o pagamento e libera o link + QR Code.</div>
+
+<script>
+  // live-ish day counter
+  (function(){
+    var el=document.getElementById('count');
+    var start=new Date(1998,4,10).getTime();
+    function tick(){
+      var d=Math.floor((Date.now()-start)/86400000);
+      el.textContent=d.toLocaleString('pt-BR');
+    }
+    tick();
+  })();
+  // demo unlock button
+  var t=document.getElementById('toast');
+  document.getElementById('cta').addEventListener('click',function(){
+    t.classList.add('show');
+    setTimeout(function(){t.classList.remove('show')},2600);
+  });
+</script>
+</body>
+</html>

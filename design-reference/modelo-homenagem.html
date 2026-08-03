@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<!--
+  ============================================================================
+  MODELO DA HOMENAGEM  —  como preencher (use Ctrl+F pra achar cada palavra):
+
+    NOME_DO_PAI        -> nome do pai. Ex.: Seu João
+    ID_DO_YOUTUBE      -> só o código do vídeo do YouTube.
+                          No link https://www.youtube.com/watch?v=ABC123xyz
+                          o código é o que vem depois de "v=":  ABC123xyz
+    DATA_INICIO        -> data que alimenta o contador, no formato AAAA-MM-DD.
+                          Ex.: 1998-05-10  (10 de maio de 1998)
+    LINK_FOTO_1        -> cole o link público da 1ª foto (veja instruções no chat)
+    LINK_FOTO_2        -> 2ª foto
+    LINK_FOTO_3        -> 3ª foto
+    MENSAGEM_CARTA     -> a carta/mensagem que a cliente escreveu pro pai
+
+  Troque TODAS essas palavras pelos dados do cliente, salve e publique.
+  Pode apagar este bloco de comentário depois, se quiser.
+  ============================================================================
+-->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feliz Dia dos Pais</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBF8F2; --bg-tint:#F4EDE1; --ink:#35302B; --muted:#948A7C;
+    --honey:#D99B54; --honey-soft:#EEC98F; --card:#FFFFFF; --line:rgba(53,48,43,.09);
+    --display:'Fraunces',Georgia,serif; --body:'Nunito Sans',system-ui,sans-serif;
+    --shadow:0 14px 36px rgba(53,48,43,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#ECE4D6}
+  body{font-family:var(--body);color:var(--ink);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:430px;margin:0 auto;position:relative;overflow-x:hidden;
+    background:radial-gradient(120% 55% at 50% 0%, #FFFDF9, transparent 55%), var(--bg);
+    box-shadow:0 0 60px rgba(0,0,0,.14);min-height:100vh}
+
+  /* ---- TELA DE ABERTURA (toque para começar) ---- */
+  #intro{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;padding:32px;
+    background:radial-gradient(130% 70% at 50% 20%, #FFFDF9, var(--bg-tint));
+    transition:opacity .8s ease}
+  #intro.hide{opacity:0;pointer-events:none}
+  #intro .eyebrow{font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--honey);font-weight:800;margin-bottom:18px}
+  #intro h1{font-family:var(--display);font-weight:400;font-size:clamp(30px,8.5vw,40px);line-height:1.1;margin-bottom:34px}
+  #intro h1 em{font-style:italic;color:var(--honey)}
+  .startbtn{border:0;cursor:pointer;background:linear-gradient(180deg,var(--honey-soft),var(--honey));
+    color:#4a3212;font-family:var(--body);font-weight:800;font-size:16px;padding:15px 30px;border-radius:100px;
+    box-shadow:0 12px 26px rgba(217,155,84,.32);display:inline-flex;align-items:center;gap:10px}
+  .startbtn .note{font-size:18px}
+  .hint{margin-top:16px;color:var(--muted);font-size:12.5px}
+
+  section{padding:58px 28px}
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .9s ease,transform .9s ease}
+  .reveal.in{opacity:1;transform:none}
+  .eyebrow{font-size:11.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--honey);font-weight:800;margin-bottom:20px}
+
+  .hero{padding-top:46px;text-align:center;min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .hero h1{font-family:var(--display);font-weight:400;font-size:clamp(33px,9.5vw,44px);line-height:1.08}
+  .hero h1 em{font-style:italic;color:var(--honey)}
+  .photo{background:var(--card);border-radius:6px;padding:9px 9px 34px;box-shadow:var(--shadow)}
+  .photo img{width:210px;height:210px;object-fit:cover;border-radius:3px;display:block;background:#EADFCF}
+  .photo.tilt{transform:rotate(-2.2deg)}
+  .hero .photo{margin:30px 0 26px}
+  .music{display:inline-flex;align-items:center;gap:11px;background:#FFF;border:1px solid var(--line);
+    padding:9px 16px 9px 13px;border-radius:100px;font-size:13px;color:var(--muted);box-shadow:0 6px 16px rgba(53,48,43,.06)}
+  .eq{display:flex;align-items:flex-end;gap:2.5px;height:14px}
+  .eq span{width:3px;background:var(--honey);border-radius:2px;animation:bounce 1s ease-in-out infinite}
+  .eq span:nth-child(2){animation-delay:.2s}.eq span:nth-child(3){animation-delay:.4s}.eq span:nth-child(4){animation-delay:.15s}
+  @keyframes bounce{0%,100%{height:4px}50%{height:14px}}
+  .scrollcue{margin-top:40px;color:var(--muted);font-size:11px;letter-spacing:.22em;text-transform:uppercase}
+  .scrollcue .arrow{display:block;margin:10px auto 0;width:1px;height:32px;background:linear-gradient(var(--honey),transparent)}
+
+  .counter{text-align:center;background:var(--bg-tint)}
+  .counter .num{font-family:var(--display);font-weight:500;color:var(--honey);font-size:clamp(54px,16vw,74px);line-height:1;letter-spacing:-.02em}
+  .counter .lbl{margin-top:14px;font-size:17px;color:var(--ink);font-weight:600}
+  .counter .sub{margin-top:6px;color:var(--muted);font-size:13.5px}
+
+  .gallery{text-align:center}
+  .gallery h2{font-family:var(--display);font-weight:400;font-size:27px;margin-bottom:6px}
+  .gallery p.k{color:var(--muted);font-size:14px;margin-bottom:32px}
+  .strip{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+  .strip .photo{transform:rotate(2deg)}
+  .strip .photo:first-child{transform:rotate(-3deg)}
+  .strip img{width:120px;height:120px}
+
+  .letter{text-align:center}
+  .letter .inner{max-width:340px;margin:0 auto}
+  .letter .k{color:var(--honey);font-size:11.5px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:18px;font-weight:800}
+  .letter p{font-family:var(--display);font-style:italic;font-size:18px;line-height:1.62;color:var(--ink);white-space:pre-line}
+
+  .closing{text-align:center;padding-bottom:80px;background:var(--bg-tint)}
+  .closing h2{font-family:var(--display);font-weight:500;font-size:30px}
+  .closing h2 em{color:var(--honey);font-style:italic}
+
+  #player{position:fixed;width:1px;height:1px;left:-9999px;top:-9999px;border:0}
+
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    .eq span{animation:none;height:9px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ABERTURA -->
+  <div id="intro">
+    <div class="eyebrow">Uma surpresa para você</div>
+    <h1>Feliz Dia dos Pais,<br><em>NOME_DO_PAI</em></h1>
+    <button class="startbtn" id="start"><span class="note">♪</span> Toque para começar</button>
+    <div class="hint">com som — deixe o volume ligado</div>
+  </div>
+
+  <!-- 1. HERO -->
+  <section class="hero">
+    <div class="eyebrow reveal">Feliz Dia dos Pais</div>
+    <h1 class="reveal">Para você,<br><em>NOME_DO_PAI</em></h1>
+    <div class="photo tilt reveal"><img src="LINK_FOTO_1" alt="foto do pai"></div>
+    <div class="music reveal"><span class="eq"><span></span><span></span><span></span><span></span></span> tocando a nossa música</div>
+    <div class="scrollcue reveal">deslize<span class="arrow"></span></div>
+  </section>
+
+  <!-- 2. CONTADOR -->
+  <section class="counter">
+    <div class="eyebrow reveal">nossa história</div>
+    <div class="num reveal" id="count">—</div>
+    <div class="lbl reveal">dias sendo o meu herói</div>
+    <div class="sub reveal">e cada um deles valeu a pena</div>
+  </section>
+
+  <!-- 3. RETROSPECTIVA -->
+  <section class="gallery">
+    <div class="eyebrow reveal">momentos</div>
+    <h2 class="reveal">De lá pra cá</h2>
+    <p class="k reveal">os instantes que ficaram guardados</p>
+    <div class="strip">
+      <div class="photo reveal"><img src="LINK_FOTO_2" alt="foto"></div>
+      <div class="photo reveal"><img src="LINK_FOTO_3" alt="foto"></div>
+    </div>
+  </section>
+
+  <!-- 4. CARTA -->
+  <section class="letter">
+    <div class="inner">
+      <div class="k reveal">a carta</div>
+      <p class="reveal">MENSAGEM_CARTA</p>
+    </div>
+  </section>
+
+  <!-- 5. ENCERRAMENTO -->
+  <section class="closing">
+    <h2 class="reveal">Te amo, <em>pai</em>.</h2>
+  </section>
+
+</div>
+
+<!-- player de música (escondido; toca ao apertar "começar") -->
+<iframe id="player" allow="autoplay" src=""></iframe>
+
+<script>
+  // ---- toca a música e revela a página ----
+  document.getElementById('start').addEventListener('click', function(){
+    var id = 'ID_DO_YOUTUBE';
+    if (id && id !== 'ID_DO_YOUTUBE') {
+      document.getElementById('player').src =
+        'https://www.youtube.com/embed/' + id + '?autoplay=1&loop=1&playlist=' + id;
+    }
+    document.getElementById('intro').classList.add('hide');
+  });
+
+  // ---- contador de dias ----
+  (function(){
+    var el = document.getElementById('count');
+    var d = new Date('DATA_INICIO');
+    if (!isNaN(d)) {
+      var dias = Math.floor((Date.now() - d.getTime()) / 86400000);
+      el.textContent = dias.toLocaleString('pt-BR');
+    } else { el.textContent = '—'; }
+  })();
+
+  // ---- aparecer suave ao rolar ----
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting) e.target.classList.add('in'); });
+  }, {threshold:.15});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  // hero já aparece de cara
+  document.querySelectorAll('.hero .reveal').forEach(function(el){ el.classList.add('in'); });
+</script>
+</body>
+</html>
