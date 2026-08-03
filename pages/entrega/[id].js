@@ -493,9 +493,9 @@ export default function Entrega() {
       linhas.forEach((linha, indice) => ctx.fillText(linha, 540, inicioY + indice * 46));
 
       // QR Code alinhado e com folga.
-      const qrBoxX = 395;
-      const qrBoxY = 1132;
-      const qrBoxSize = 290;
+      const qrBoxX = 425;
+      const qrBoxY = 1110;
+      const qrBoxSize = 230;
       ctx.save();
       ctx.shadowColor = 'rgba(53,48,43,.12)';
       ctx.shadowBlur = 18;
@@ -508,11 +508,11 @@ export default function Entrega() {
       ctx.lineWidth = 2;
       caminhoArredondado(ctx, qrBoxX, qrBoxY, qrBoxSize, qrBoxSize, 24);
       ctx.stroke();
-      ctx.drawImage(qrCode, qrBoxX + 25, qrBoxY + 25, 240, 240);
+      ctx.drawImage(qrCode, qrBoxX + 20, qrBoxY + 20, 190, 190);
 
       ctx.fillStyle = '#7B6A5C';
       ctx.font = '700 24px "Nunito Sans", Arial, sans-serif';
-      ctx.fillText('Escaneie para abrir a homenagem', 540, 1400);
+      ctx.fillText('Escaneie para abrir a homenagem', 540, 1360);
 
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
       if (!blob) throw new Error('Não foi possível finalizar o cartão.');
