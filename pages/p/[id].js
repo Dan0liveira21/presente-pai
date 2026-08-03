@@ -109,7 +109,8 @@ export default function PaginaHomenagem({ pedido, estado }) {
 
   function comecar() {
     if (videoId) {
-      setPlayerSrc(`https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&playsinline=1&rel=0&enablejsapi=1`);
+      const origin = encodeURIComponent(window.location.origin);
+      setPlayerSrc(`https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&playsinline=1&rel=0&enablejsapi=1&controls=1&fs=0&iv_load_policy=3&origin=${origin}`);
     }
     setIniciada(true);
   }
@@ -176,10 +177,23 @@ export default function PaginaHomenagem({ pedido, estado }) {
           <h1 className="reveal">Para você,<br /><em>{pedido.nome_pai}</em></h1>
           {fotos[0] && <div className="photo tilt reveal"><img src={fotos[0]} alt={`Foto de ${pedido.nome_pai}`} /></div>}
           {videoId && (
-            <div className="music reveal">
-              <span className="eq"><i /><i /><i /><i /></span>
-              tocando a nossa música
-            </div>
+            <>
+              <div className="music reveal">
+                <span className="eq"><i /><i /><i /><i /></span>
+                tocando a nossa música
+              </div>
+              {iniciada && playerSrc && (
+                <div className="youtubeCard">
+                  <iframe
+                    id="player"
+                    title="Música da homenagem"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowFullScreen={false}
+                    src={playerSrc}
+                  />
+                </div>
+              )}
+            </>
           )}
           <div className="scrollcue reveal">deslize<span className="arrow" /></div>
         </section>
@@ -232,13 +246,6 @@ export default function PaginaHomenagem({ pedido, estado }) {
         </section>
       </main>
 
-      <iframe
-        id="player"
-        title="Música da homenagem"
-        allow="autoplay"
-        src={playerSrc}
-        aria-hidden="true"
-      />
       <Estilos />
     </>
   );
@@ -322,7 +329,8 @@ function Estilos() {
         .closing { background: #F4EDE1; padding-bottom: 80px; }
         .closing h2 { font-family: 'Fraunces', Georgia, serif; font-weight: 500; font-size: 30px; }
 
-        #player { position: fixed; width: 1px; height: 1px; left: -9999px; top: -9999px; border: 0; }
+        .youtubeCard { width: min(100%, 340px); margin: 18px auto 0; padding: 7px; background: rgba(255,255,255,.92); border: 1px solid rgba(53,48,43,.10); border-radius: 18px; box-shadow: 0 14px 32px rgba(53,48,43,.12); overflow: hidden; }
+        #player { display: block; width: 100%; aspect-ratio: 16 / 9; min-height: 200px; border: 0; border-radius: 12px; background: #1f1f1f; }
 
         .statusWrap { display: flex; align-items: center; justify-content: center; padding: 54px 28px; }
         .statusCard { width: 100%; text-align: center; }
