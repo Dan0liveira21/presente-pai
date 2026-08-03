@@ -562,6 +562,11 @@ export default function Entrega() {
               <h1>Seu presente está pronto</h1>
               <p>Agora é só finalizar os detalhes e preparar a surpresa.</p>
 
+              <div className="saveWarning">
+                <strong>Antes de fechar esta página</strong>
+                <span>Salve esta página nos favoritos ou copie o link da homenagem abaixo para não perder o acesso.</span>
+              </div>
+
               {pedido.temAudio && pedido.podeGerenciar && (
                 <section className="audioCard">
                   <div className="audioIcon" aria-hidden="true">♪</div>
@@ -676,6 +681,9 @@ export default function Entrega() {
         @keyframes girar { to { transform: rotate(360deg); } }
         .check, .lock { width: 54px; height: 54px; margin: 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 40% 35%,#EEC98F,#D99B54 65%); color: #4a3212; font-size: 26px; font-weight: 800; box-shadow: 0 9px 20px rgba(217,155,84,.28); }
         .noteBox, .access { margin-top: 22px; border-radius: 12px; padding: 11px 13px; background: #F4EDE1; color: #766b5f; font-size: 13px; }
+        .saveWarning { margin-top: 20px; padding: 14px 15px; border: 1px solid rgba(217,155,84,.38); border-radius: 13px; background: #FFF8EC; text-align: left; box-shadow: 0 8px 20px rgba(53,48,43,.06); }
+        .saveWarning strong { display: block; color: #6B4A22; font-size: 13.5px; margin-bottom: 4px; }
+        .saveWarning span { display: block; color: #7B6A5C; font-size: 12.8px; line-height: 1.5; }
         .qr { display: block; width: min(240px,80%); aspect-ratio: 1; object-fit: contain; margin: 28px auto 22px; background: #FFF; border-radius: 16px; padding: 12px; box-shadow: 0 12px 28px rgba(53,48,43,.11); }
         .primary, .secondary { display: block; width: 100%; border-radius: 12px; padding: 15px; font-weight: 800; text-decoration: none; cursor: pointer; }
         .primary { border: 0; background: linear-gradient(180deg,#EEC98F,#D99B54); color: #4a3212; box-shadow: 0 12px 24px rgba(217,155,84,.28); }

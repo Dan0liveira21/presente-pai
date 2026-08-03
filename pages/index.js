@@ -4,6 +4,52 @@ import { useEffect, useState } from 'react';
 const MAX_FOTOS = 6;
 const MAX_LADO = 1280;
 const ALVO_BYTES = 450_000;
+const META_PIXEL_ID = '1384277913714820';
+const UTMIFY_PIXEL_ID = '6a6ade3945125ae518cece2c';
+const CHAVES_TRACKING = [
+  'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_id',
+  'fbclid', 'gclid', 'ttclid', 'src', 'sck', 'xcod',
+];
+
+function salvarTrackingDaUrl() {
+  if (typeof window === 'undefined') return {};
+
+  const atuais = {};
+  const params = new URLSearchParams(window.location.search);
+  CHAVES_TRACKING.forEach((chave) => {
+    const valor = params.get(chave);
+    if (valor) atuais[chave] = valor.slice(0, 500);
+  });
+
+  const conteudoAnuncio = params.get('utm_content');
+  if (conteudoAnuncio) atuais.utm_content_original = conteudoAnuncio.slice(0, 500);
+
+  let anteriores = {};
+  try {
+    anteriores = JSON.parse(sessionStorage.getItem('eternize_tracking') || '{}');
+  } catch (_) {
+    anteriores = {};
+  }
+
+  const tracking = { ...anteriores, ...atuais };
+  try {
+    sessionStorage.setItem('eternize_tracking', JSON.stringify(tracking));
+  } catch (_) {
+    // O checkout continua funcionando mesmo sem sessionStorage.
+  }
+  return tracking;
+}
+
+function obterTrackingSalvo() {
+  if (typeof window === 'undefined') return {};
+  const atual = salvarTrackingDaUrl();
+  if (Object.keys(atual).length) return atual;
+  try {
+    return JSON.parse(sessionStorage.getItem('eternize_tracking') || '{}');
+  } catch (_) {
+    return {};
+  }
+}
 
 function bytesBase64(dataUrl) {
   const base64 = String(dataUrl).split(',')[1] || '';
@@ -188,6 +234,8 @@ export default function Home() {
   const [erro, setErro] = useState('');
 
   useEffect(() => {
+    salvarTrackingDaUrl();
+
     const entregaPendente = sessionStorage.getItem('entregaUrl');
     if (entregaPendente) {
       sessionStorage.removeItem('entregaUrl');
@@ -244,6 +292,15 @@ export default function Home() {
     setErro('');
     setEnviando(true);
 
+    if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+      window.fbq('track', 'InitiateCheckout', {
+        content_name: 'Eternize — Presente de Dia dos Pais',
+        content_type: 'product',
+        value: 9.90,
+        currency: 'BRL',
+      });
+    }
+
     // Mantém a página de entrega aberta e envia o checkout para outra aba.
     const checkoutTab = window.open('about:blank', '_blank');
     mostrarEsperaNoCheckout(checkoutTab);
@@ -258,6 +315,7 @@ export default function Home() {
           musica_url: musica,
           data_referencia: data,
           fotos,
+          tracking: obterTrackingSalvo(),
           website: '',
         }),
       });
@@ -294,7 +352,32 @@ export default function Home() {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${META_PIXEL_ID}');fbq('track','PageView');fbq('track','ViewContent',{content_name:'Eternize — Presente de Dia dos Pais',content_type:'product',value:9.90,currency:'BRL'});`,
+          }}
+        />
+        <script dangerouslySetInnerHTML={{ __html: `window.pixelId='${UTMIFY_PIXEL_ID}';` }} />
+        <script src="https://cdn.utmify.com.br/scripts/pixel/pixel.js" async defer />
+        <script
+          src="https://cdn.utmify.com.br/scripts/utms/latest.js"
+          async
+          defer
+          data-utmify-prevent-xcod-sck=""
+          data-utmify-prevent-subids=""
+        />
       </Head>
+
+      <noscript>
+        <img
+          height="1"
+          width="1"
+          style={{ display: 'none' }}
+          src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
+          alt=""
+        />
+      </noscript>
 
       <main className="page">
         <section className="form" aria-label="Personalização da homenagem">

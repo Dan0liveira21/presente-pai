@@ -61,9 +61,24 @@ function extrairFoto(dataUrl) {
   return { contentType, buffer };
 }
 
-function montarCheckout(id) {
+function montarCheckout(id, tracking = {}) {
   if (!CHECKOUT_URL) throw new Error('WIAPY_CHECKOUT_URL não configurada.');
   const url = new URL(CHECKOUT_URL);
+
+  const permitidas = new Set([
+    'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_id',
+    'fbclid', 'gclid', 'ttclid', 'src', 'sck', 'xcod', 'utm_content_original',
+  ]);
+
+  if (tracking && typeof tracking === 'object' && !Array.isArray(tracking)) {
+    for (const [chave, valor] of Object.entries(tracking)) {
+      if (!permitidas.has(chave) || typeof valor !== 'string' || !valor.trim()) continue;
+      const nome = chave === 'utm_content_original' ? 'ad_content' : chave;
+      url.searchParams.set(nome, valor.trim().slice(0, 500));
+    }
+  }
+
+  // A Wiapy devolve este campo no webhook; ele precisa continuar sendo o ID do pedido.
   url.searchParams.set('utm_content', id);
   return url.toString();
 }
@@ -85,6 +100,7 @@ export default async function handler(req, res) {
     const musicaUrl = texto(body.musica_url, 500);
     const dataReferencia = texto(body.data_referencia, 10);
     const fotos = Array.isArray(body.fotos) ? body.fotos : [];
+    const tracking = body.tracking && typeof body.tracking === 'object' ? body.tracking : {};
 
     if (!nomePai || !mensagem || !musicaUrl || !dataReferencia) {
       return res.status(400).json({ erro: 'Preencha todos os campos da homenagem.' });
@@ -142,7 +158,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       id,
-      checkoutUrl: montarCheckout(id),
+      checkoutUrl: montarCheckout(id, tracking),
       entregaUrl: `/entrega/${id}?token=${encodeURIComponent(tokenEntrega)}`,
     });
   } catch (error) {
