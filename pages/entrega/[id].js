@@ -47,6 +47,108 @@ function tipoParaGravacao() {
   return opcoes.find((tipo) => MediaRecorder.isTypeSupported?.(tipo)) || '';
 }
 
+
+function carregarImagem(url) {
+  return new Promise(async (resolve, reject) => {
+    let urlTemporaria = '';
+    try {
+      let origem = url;
+      if (!String(url || '').startsWith('data:')) {
+        const resposta = await fetch(url, { mode: 'cors', cache: 'no-store' });
+        if (!resposta.ok) throw new Error('Não foi possível carregar uma das imagens.');
+        urlTemporaria = URL.createObjectURL(await resposta.blob());
+        origem = urlTemporaria;
+      }
+
+      const imagem = new Image();
+      imagem.onload = () => {
+        if (urlTemporaria) URL.revokeObjectURL(urlTemporaria);
+        resolve(imagem);
+      };
+      imagem.onerror = () => {
+        if (urlTemporaria) URL.revokeObjectURL(urlTemporaria);
+        reject(new Error('Não foi possível carregar uma das imagens.'));
+      };
+      imagem.src = origem;
+    } catch (error) {
+      if (urlTemporaria) URL.revokeObjectURL(urlTemporaria);
+      reject(error);
+    }
+  });
+}
+
+function caminhoArredondado(ctx, x, y, largura, altura, raio) {
+  const r = Math.min(raio, largura / 2, altura / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + largura, y, x + largura, y + altura, r);
+  ctx.arcTo(x + largura, y + altura, x, y + altura, r);
+  ctx.arcTo(x, y + altura, x, y, r);
+  ctx.arcTo(x, y, x + largura, y, r);
+  ctx.closePath();
+}
+
+function desenharCover(ctx, imagem, x, y, largura, altura, raio = 0) {
+  const escala = Math.max(largura / imagem.width, altura / imagem.height);
+  const destinoLargura = imagem.width * escala;
+  const destinoAltura = imagem.height * escala;
+  const destinoX = x + (largura - destinoLargura) / 2;
+  const destinoY = y + (altura - destinoAltura) / 2;
+
+  ctx.save();
+  if (raio) {
+    caminhoArredondado(ctx, x, y, largura, altura, raio);
+    ctx.clip();
+  }
+  ctx.drawImage(imagem, destinoX, destinoY, destinoLargura, destinoAltura);
+  ctx.restore();
+}
+
+function linhasDoTexto(ctx, texto, larguraMaxima, maxLinhas = 3) {
+  const palavras = String(texto || '').trim().split(/\s+/).filter(Boolean);
+  const linhas = [];
+  let atual = '';
+
+  for (const palavra of palavras) {
+    const teste = atual ? `${atual} ${palavra}` : palavra;
+    if (ctx.measureText(teste).width <= larguraMaxima) {
+      atual = teste;
+    } else {
+      if (atual) linhas.push(atual);
+      atual = palavra;
+      if (linhas.length >= maxLinhas - 1) break;
+    }
+  }
+  if (atual && linhas.length < maxLinhas) linhas.push(atual);
+
+  const usadas = linhas.join(' ').split(/\s+/).length;
+  if (usadas < palavras.length && linhas.length) {
+    let ultima = linhas[linhas.length - 1];
+    while (ultima && ctx.measureText(`${ultima}…`).width > larguraMaxima) {
+      ultima = ultima.split(' ').slice(0, -1).join(' ');
+    }
+    linhas[linhas.length - 1] = `${ultima || ''}…`;
+  }
+  return linhas;
+}
+
+function fraseCurta(mensagem) {
+  const limpa = String(mensagem || '').replace(/\s+/g, ' ').trim();
+  if (!limpa) return 'Você é meu exemplo de amor, força e carinho.';
+  const primeira = limpa.split(/(?<=[.!?])\s+/)[0] || limpa;
+  return primeira.length <= 135 ? primeira : `${primeira.slice(0, 132).trim()}…`;
+}
+
+function nomeArquivo(nome) {
+  const base = String(nome || 'pai')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase();
+  return base || 'pai';
+}
+
 export default function Entrega() {
   const router = useRouter();
   const id = typeof router.query.id === 'string' ? router.query.id : '';
@@ -60,6 +162,8 @@ export default function Entrega() {
   const [enviandoAudio, setEnviandoAudio] = useState(false);
   const [audioMensagem, setAudioMensagem] = useState('');
   const [audioErro, setAudioErro] = useState('');
+  const [gerandoCartao, setGerandoCartao] = useState(false);
+  const [cartaoErro, setCartaoErro] = useState('');
 
   const gravadorRef = useRef(null);
   const streamRef = useRef(null);
@@ -287,6 +391,115 @@ export default function Entrega() {
     }
   }
 
+  async function baixarCartao() {
+    if (!pedido.cartaoPremium || !pedido.fotoPrincipal || !pedido.qrCode) return;
+    setGerandoCartao(true);
+    setCartaoErro('');
+
+    try {
+      if (document.fonts?.ready) await document.fonts.ready;
+      const [foto, qrCode] = await Promise.all([
+        carregarImagem(pedido.fotoPrincipal),
+        carregarImagem(pedido.qrCode),
+      ]);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1350;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Seu navegador não conseguiu gerar o cartão.');
+
+      const fundo = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      fundo.addColorStop(0, '#FFFDF8');
+      fundo.addColorStop(1, '#F2E6D7');
+      ctx.fillStyle = fundo;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Moldura externa.
+      ctx.strokeStyle = '#D99B54';
+      ctx.lineWidth = 5;
+      caminhoArredondado(ctx, 34, 34, 1012, 1282, 38);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(217,155,84,.25)';
+      ctx.lineWidth = 2;
+      caminhoArredondado(ctx, 52, 52, 976, 1246, 30);
+      ctx.stroke();
+
+      // Marca e título.
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#D9656A';
+      ctx.font = '700 25px "Nunito Sans", Arial, sans-serif';
+      ctx.letterSpacing = '8px';
+      ctx.fillText('E T E R N I Z E', 540, 102);
+      ctx.letterSpacing = '0px';
+
+      ctx.fillStyle = '#3B3028';
+      ctx.font = '500 47px Fraunces, Georgia, serif';
+      ctx.fillText('Feliz Dia dos', 540, 172);
+      ctx.fillStyle = '#D9656A';
+      ctx.font = '600 82px Fraunces, Georgia, serif';
+      ctx.fillText('Pais', 540, 254);
+
+      ctx.fillStyle = '#8A7564';
+      ctx.font = '700 25px "Nunito Sans", Arial, sans-serif';
+      const nome = String(pedido.nomePai || 'Pai').trim();
+      ctx.fillText(`Uma homenagem para ${nome}`, 540, 300);
+
+      // Foto principal.
+      ctx.save();
+      ctx.shadowColor = 'rgba(53,48,43,.22)';
+      ctx.shadowBlur = 28;
+      ctx.shadowOffsetY = 14;
+      ctx.fillStyle = '#FFFFFF';
+      caminhoArredondado(ctx, 105, 342, 870, 545, 28);
+      ctx.fill();
+      ctx.restore();
+      desenharCover(ctx, foto, 125, 362, 830, 505, 20);
+
+      // Mensagem.
+      ctx.fillStyle = '#D9656A';
+      ctx.font = '700 30px "Nunito Sans", Arial, sans-serif';
+      ctx.fillText('♥', 540, 936);
+      ctx.fillStyle = '#3B3028';
+      ctx.font = '500 35px Fraunces, Georgia, serif';
+      const linhas = linhasDoTexto(ctx, fraseCurta(pedido.mensagemCartao), 760, 3);
+      const inicioY = 988 - ((linhas.length - 1) * 22);
+      linhas.forEach((linha, indice) => ctx.fillText(linha, 540, inicioY + indice * 48));
+
+      // QR Code.
+      ctx.save();
+      ctx.shadowColor = 'rgba(53,48,43,.16)';
+      ctx.shadowBlur = 20;
+      ctx.shadowOffsetY = 8;
+      ctx.fillStyle = '#FFFFFF';
+      caminhoArredondado(ctx, 415, 1070, 250, 250, 22);
+      ctx.fill();
+      ctx.restore();
+      ctx.drawImage(qrCode, 430, 1085, 220, 220);
+
+      ctx.fillStyle = '#7B6A5C';
+      ctx.font = '700 22px "Nunito Sans", Arial, sans-serif';
+      ctx.fillText('Escaneie para abrir a homenagem', 540, 1330);
+
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+      if (!blob) throw new Error('Não foi possível finalizar o cartão.');
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `cartao-dia-dos-pais-${nomeArquivo(pedido.nomePai)}.png`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch (error) {
+      console.error('Erro ao gerar cartão:', error);
+      setCartaoErro('Não foi possível gerar o cartão agora. Atualize a página e tente novamente.');
+    } finally {
+      setGerandoCartao(false);
+    }
+  }
+
   const pendente = ['loading', 'pending', 'unpaid'].includes(pedido.status);
   const cancelado = ['refunded', 'chargedback'].includes(pedido.status);
 
@@ -373,6 +586,23 @@ export default function Entrega() {
                 </section>
               )}
 
+              {pedido.cartaoPremium && pedido.podeGerenciar && (
+                <section className="cartaoCard">
+                  <div className="cartaoIcon" aria-hidden="true">▣</div>
+                  <h2>Seu cartão digital personalizado</h2>
+                  <p>Gerado automaticamente com a primeira foto, o nome do pai, uma mensagem e o QR Code da homenagem.</p>
+                  <button
+                    className="cartaoButton"
+                    type="button"
+                    disabled={gerandoCartao}
+                    onClick={baixarCartao}
+                  >
+                    {gerandoCartao ? 'Gerando cartão...' : 'Baixar cartão personalizado'}
+                  </button>
+                  {cartaoErro && <div className="audioError">{cartaoErro}</div>}
+                </section>
+              )}
+
               {pedido.qrCode && <img className="qr" src={pedido.qrCode} alt="QR Code da homenagem" />}
 
               <a className="primary" href={pedido.link} target="_blank" rel="noreferrer" referrerPolicy="no-referrer">Abrir minha homenagem</a>
@@ -447,6 +677,13 @@ export default function Entrega() {
         .audioSuccess, .audioError { margin-top: 13px; padding: 10px 11px; border-radius: 10px; font-size: 12.5px; font-weight: 700; line-height: 1.4; }
         .audioSuccess { background: #EAF3E8; color: #3F6B3A; }
         .audioError { background: #F8E4E1; color: #8E3A31; }
+
+        .cartaoCard { margin: 20px 0 0; padding: 24px 18px 20px; background: #FFF9F1; border: 1px solid rgba(217,101,106,.22); border-radius: 18px; }
+        .cartaoIcon { width: 42px; height: 42px; margin: 0 auto 12px; border-radius: 50%; display: grid; place-items: center; background: #FBE8E5; color: #D9656A; font-size: 20px; box-shadow: 0 7px 16px rgba(53,48,43,.08); }
+        .cartaoCard h2 { font-family: 'Fraunces', Georgia, serif; font-size: 23px; line-height: 1.15; font-weight: 500; margin-bottom: 8px; }
+        .cartaoCard p { font-size: 13.5px; }
+        .cartaoButton { display: block; width: 100%; margin-top: 17px; border: 0; border-radius: 11px; padding: 13px 10px; background: #D9656A; color: #FFF; font-weight: 800; cursor: pointer; box-shadow: 0 10px 20px rgba(217,101,106,.22); }
+        .cartaoButton:disabled { opacity: .62; cursor: wait; }
 
         @media (prefers-reduced-motion: reduce) { .spinner, .recordDot { animation: none; } }
       `}</style>

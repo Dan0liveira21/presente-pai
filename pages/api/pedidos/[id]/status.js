@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 
   const { data: pedido, error } = await supabaseAdmin
     .from('pedidos')
-    .select('pago,status_pagamento,link,qr_code,vitalicio,expira_em,tem_audio,audio_url,token_entrega')
+    .select('pago,status_pagamento,link,qr_code,vitalicio,expira_em,tem_audio,audio_url,cartao_premium,nome_pai,mensagem,fotos,token_entrega')
     .eq('id', id)
     .maybeSingle();
 
@@ -48,5 +48,9 @@ export default async function handler(req, res) {
     podeGerenciar,
     temAudio: podeGerenciar ? pedido.tem_audio : false,
     audioUrl: podeGerenciar ? pedido.audio_url : null,
+    cartaoPremium: podeGerenciar ? pedido.cartao_premium : false,
+    nomePai: podeGerenciar ? pedido.nome_pai : null,
+    mensagemCartao: podeGerenciar ? pedido.mensagem : null,
+    fotoPrincipal: podeGerenciar && Array.isArray(pedido.fotos) ? pedido.fotos[0] || null : null,
   });
 }

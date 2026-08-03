@@ -1,0 +1,10 @@
+ATUALIZAÇÃO DO CARTÃO DIGITAL
+
+1. Copie todo o conteúdo desta pasta para a pasta principal do projeto.
+2. Substitua os arquivos existentes.
+3. Envie as alterações ao mesmo repositório do GitHub.
+4. Aguarde a Vercel concluir o deploy.
+5. Faça uma compra de teste marcando somente o order bump Cartão Digital.
+6. Na página de entrega, clique em Baixar cartão personalizado.
+
+Não é necessário rodar um novo SQL para esta atualização.
