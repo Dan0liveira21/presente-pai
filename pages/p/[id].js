@@ -109,9 +109,18 @@ export default function PaginaHomenagem({ pedido, estado }) {
 
   function comecar() {
     if (videoId) {
-      setPlayerSrc(`https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&playsinline=1&rel=0`);
+      setPlayerSrc(`https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&playsinline=1&rel=0&enablejsapi=1`);
     }
     setIniciada(true);
+  }
+
+  function pausarMusica() {
+    const frame = document.getElementById('player');
+    frame?.contentWindow?.postMessage(JSON.stringify({
+      event: 'command',
+      func: 'pauseVideo',
+      args: [],
+    }), '*');
   }
 
   if (estado !== 'ativo') {
@@ -206,10 +215,15 @@ export default function PaginaHomenagem({ pedido, estado }) {
 
         {pedido.tem_audio && pedido.audio_url && (
           <section className="audio">
-            <div className="eyebrow reveal">um recado de voz</div>
-            <audio className="reveal" controls src={pedido.audio_url} preload="metadata">
-              Seu navegador não suporta áudio.
-            </audio>
+            <div className="voiceCard reveal">
+              <div className="voiceIcon" aria-hidden="true">♪</div>
+              <div className="eyebrow">uma mensagem para você</div>
+              <h2>Ouça com o coração</h2>
+              <p>Esta voz também faz parte da nossa história.</p>
+              <audio controls src={pedido.audio_url} preload="metadata" onPlay={pausarMusica}>
+                Seu navegador não suporta áudio.
+              </audio>
+            </div>
           </section>
         )}
 
@@ -298,7 +312,13 @@ function Estilos() {
         .letter .inner { max-width: 340px; margin: 0 auto; }
         .letterLabel { color: #D99B54; font-size: 11.5px; letter-spacing: .3em; text-transform: uppercase; margin-bottom: 18px; font-weight: 800; }
         .letter p { font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 18px; line-height: 1.62; white-space: pre-line; overflow-wrap: anywhere; }
-        .audio audio { width: 100%; max-width: 320px; }
+        .audio { background: #FBF8F2; }
+        .voiceCard { max-width: 340px; margin: 0 auto; padding: 30px 22px 24px; border-radius: 22px; background: #F4EDE1; border: 1px solid rgba(217,155,84,.22); box-shadow: 0 14px 34px rgba(53,48,43,.08); }
+        .voiceIcon { width: 48px; height: 48px; margin: 0 auto 17px; border-radius: 50%; display: grid; place-items: center; color: #8B5B25; font-size: 22px; background: radial-gradient(circle at 40% 35%,#F7DFB9,#D99B54 70%); box-shadow: 0 9px 20px rgba(217,155,84,.25); }
+        .voiceCard .eyebrow { margin-bottom: 11px; }
+        .voiceCard h2 { font-family: 'Fraunces', Georgia, serif; font-size: 27px; font-weight: 500; line-height: 1.15; }
+        .voiceCard p { margin: 9px 0 18px; color: #948A7C; font-size: 13.5px; line-height: 1.5; }
+        .voiceCard audio { width: 100%; }
         .closing { background: #F4EDE1; padding-bottom: 80px; }
         .closing h2 { font-family: 'Fraunces', Georgia, serif; font-weight: 500; font-size: 30px; }
 

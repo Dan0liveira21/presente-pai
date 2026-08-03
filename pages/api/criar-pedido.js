@@ -14,6 +14,10 @@ function novoId() {
   return crypto.randomBytes(12).toString('hex'); // 96 bits, 24 caracteres.
 }
 
+function novoTokenEntrega() {
+  return crypto.randomBytes(24).toString('hex'); // 192 bits.
+}
+
 function texto(valor, limite) {
   return typeof valor === 'string' ? valor.trim().slice(0, limite) : '';
 }
@@ -102,6 +106,7 @@ export default async function handler(req, res) {
     }
 
     const id = novoId();
+    const tokenEntrega = novoTokenEntrega();
     const links = [];
 
     for (let i = 0; i < arquivos.length; i += 1) {
@@ -130,6 +135,7 @@ export default async function handler(req, res) {
       fotos: links,
       pago: false,
       status_pagamento: 'pending',
+      token_entrega: tokenEntrega,
     });
 
     if (insertError) throw insertError;
@@ -137,7 +143,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       id,
       checkoutUrl: montarCheckout(id),
-      entregaUrl: `/entrega/${id}`,
+      entregaUrl: `/entrega/${id}?token=${encodeURIComponent(tokenEntrega)}`,
     });
   } catch (error) {
     if (caminhosEnviados.length) {

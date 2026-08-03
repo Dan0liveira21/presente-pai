@@ -1,0 +1,9 @@
+MENSAGEM DE VOZ — ORDEM DE PUBLICAÇÃO
+
+1. Execute o arquivo audio-schema.sql no SQL Editor do Supabase.
+2. Substitua os arquivos do projeto pelos arquivos deste pacote.
+3. Envie as alterações ao GitHub e aguarde a Vercel ficar Ready.
+4. Crie uma homenagem nova, marque o order bump de áudio e pague o teste.
+5. Na página de entrega, grave ou envie um áudio e confirme se ele aparece na homenagem.
+
+Observação: compras criadas antes desta atualização não possuem o token de edição do áudio. Use uma homenagem nova no teste.

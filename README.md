@@ -10,7 +10,7 @@ App em Next.js (Pages Router) + Supabase + Vercel + checkout Wiapy.
 4. O checkout abre em outra aba; a aba original acompanha a confirmação.
 5. A Wiapy envia o webhook.
 6. O sistema libera a página, ativa os bumps, gera o link e o QR Code.
-7. A página de entrega exibe o link e permite baixar o QR em PNG.
+7. A página de entrega exibe o link, permite baixar o QR e, quando comprado, gravar ou enviar a mensagem de voz.
 
 ## Arquivos principais
 
@@ -19,9 +19,12 @@ App em Next.js (Pages Router) + Supabase + Vercel + checkout Wiapy.
 - `pages/api/webhook/wiapy.js`: processa o payload oficial da Wiapy.
 - `pages/entrega/[id].js`: acompanha o pagamento e entrega link + QR.
 - `pages/api/pedidos/[id]/status.js`: status seguro da entrega.
+- `pages/api/pedidos/[id]/audio-upload.js`: cria uma URL assinada para o áudio.
+- `pages/api/pedidos/[id]/audio-confirmar.js`: confirma o arquivo e liga o áudio à homenagem.
 - `pages/p/[id].js`: página final da homenagem.
 - `pages/api/cron/limpar-abandonados.js`: remove pedidos não pagos antigos.
-- `supabase-schema.sql`: tabelas, índices e bucket de fotos.
+- `supabase-schema.sql`: tabelas, índices e buckets de fotos e áudios.
+- `audio-schema.sql`: atualização curta para ativar somente a função de áudio.
 
 ## Preparação
 
@@ -49,6 +52,7 @@ O webhook usa:
 - webhook repetido não duplica processamento;
 - `refunded` e `chargedback` desativam o acesso;
 - cada bump liga somente seu campo;
+- o bump de áudio permite gravar ou selecionar um arquivo e o reprodutor aparece na homenagem;
 - 6 fotos de celular são comprimidas e enviadas;
 - o QR abre exatamente a URL da homenagem;
 - a entrega funciona no celular com o checkout em outra aba;

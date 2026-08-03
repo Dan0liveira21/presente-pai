@@ -30,6 +30,20 @@ function somarUmAno(dataIsoString) {
   return data.toISOString();
 }
 
+
+function caminhoAudio(url, pedidoId) {
+  if (!url) return '';
+  try {
+    const marcador = '/storage/v1/object/public/audios/';
+    const indice = String(url).indexOf(marcador);
+    if (indice < 0) return '';
+    const caminho = decodeURIComponent(String(url).slice(indice + marcador.length).split('?')[0]);
+    return caminho.startsWith(`${pedidoId}/`) ? caminho : '';
+  } catch {
+    return '';
+  }
+}
+
 async function jaProcessado(txId) {
   const { data, error } = await supabaseAdmin
     .from('webhooks_processados')
@@ -49,7 +63,7 @@ async function localizarPedido(pedidoId, paymentId) {
   if (pedidoId) {
     const { data, error } = await supabaseAdmin
       .from('pedidos')
-      .select('id,pago,pago_em,vitalicio,expira_em')
+      .select('id,pago,pago_em,vitalicio,expira_em,audio_url')
       .eq('id', pedidoId)
       .maybeSingle();
     if (error) throw error;
@@ -59,7 +73,7 @@ async function localizarPedido(pedidoId, paymentId) {
   if (paymentId) {
     const { data, error } = await supabaseAdmin
       .from('pedidos')
-      .select('id,pago,pago_em,vitalicio,expira_em')
+      .select('id,pago,pago_em,vitalicio,expira_em,audio_url')
       .eq('wiapy_payment_id', paymentId)
       .maybeSingle();
     if (error) throw error;
@@ -113,6 +127,12 @@ export default async function handler(req, res) {
     if (await jaProcessado(txId)) return res.status(200).send('ok (ja processado)');
 
     if (status === 'refunded' || status === 'chargedback') {
+      const audioAnterior = caminhoAudio(pedido.audio_url, pedido.id);
+      if (audioAnterior) {
+        const { error: removeError } = await supabaseAdmin.storage.from('audios').remove([audioAnterior]);
+        if (removeError) console.error('Não foi possível remover o áudio estornado:', removeError);
+      }
+
       const { error } = await supabaseAdmin
         .from('pedidos')
         .update({
@@ -120,6 +140,8 @@ export default async function handler(req, res) {
           status_pagamento: status,
           link: null,
           qr_code: null,
+          audio_url: null,
+          audio_enviado_em: null,
         })
         .eq('id', pedido.id);
       if (error) throw error;

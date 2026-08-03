@@ -10,11 +10,12 @@ export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ erro: 'Método não permitido.' });
 
   const id = String(req.query.id || '');
+  const token = String(req.query.token || '');
   if (!/^[a-f0-9]{12,32}$/i.test(id)) return res.status(400).json({ erro: 'Pedido inválido.' });
 
   const { data: pedido, error } = await supabaseAdmin
     .from('pedidos')
-    .select('pago,status_pagamento,link,qr_code,vitalicio,expira_em')
+    .select('pago,status_pagamento,link,qr_code,vitalicio,expira_em,tem_audio,audio_url,token_entrega')
     .eq('id', id)
     .maybeSingle();
 
@@ -32,11 +33,20 @@ export default async function handler(req, res) {
     return res.status(200).json({ status: pedido.status_pagamento || 'pending' });
   }
 
+  const podeGerenciar = Boolean(
+    pedido.token_entrega &&
+    /^[a-f0-9]{48}$/i.test(token) &&
+    token === pedido.token_entrega
+  );
+
   return res.status(200).json({
     status: 'paid',
     link: pedido.link,
     qrCode: pedido.qr_code,
     vitalicio: pedido.vitalicio,
     expiraEm: pedido.expira_em,
+    podeGerenciar,
+    temAudio: podeGerenciar ? pedido.tem_audio : false,
+    audioUrl: podeGerenciar ? pedido.audio_url : null,
   });
 }

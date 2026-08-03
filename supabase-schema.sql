@@ -16,6 +16,8 @@ create table if not exists pedidos (
   cliente_email     text,
   tem_audio         boolean not null default false,
   audio_url         text,
+  audio_enviado_em  timestamptz,
+  token_entrega     text,
   vitalicio         boolean not null default false,
   tem_video         boolean not null default false,
   cartao_premium    boolean not null default false,
@@ -32,6 +34,9 @@ alter table pedidos add column if not exists status_pagamento text not null defa
 alter table pedidos add column if not exists wiapy_payment_id text;
 alter table pedidos add column if not exists cliente_email text;
 alter table pedidos add column if not exists expira_em timestamptz;
+alter table pedidos add column if not exists audio_enviado_em timestamptz;
+alter table pedidos add column if not exists token_entrega text;
+create unique index if not exists pedidos_token_entrega_idx on pedidos (token_entrega) where token_entrega is not null;
 
 create index if not exists pedidos_pagamento_idx on pedidos (wiapy_payment_id);
 create index if not exists pedidos_pendentes_idx on pedidos (pago, criado_em);
@@ -51,6 +56,31 @@ values (
   true,
   700000,
   array['image/jpeg', 'image/png', 'image/webp']
+)
+on conflict (id) do update set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+
+-- Bucket de áudios. O upload é feito por URL assinada e a leitura é pública
+-- porque o endereço da homenagem usa um ID longo e aleatório.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'audios',
+  'audios',
+  true,
+  15728640,
+  array[
+    'audio/mpeg',
+    'audio/mp3',
+    'audio/mp4',
+    'audio/x-m4a',
+    'audio/webm',
+    'audio/ogg',
+    'audio/wav',
+    'audio/x-wav'
+  ]
 )
 on conflict (id) do update set
   public = excluded.public,
