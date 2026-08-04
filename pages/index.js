@@ -11,6 +11,8 @@ const CHAVES_TRACKING = [
   'fbclid', 'gclid', 'ttclid', 'src', 'sck', 'xcod',
 ];
 
+const CARTA_EXEMPLO = `Pai, hoje eu só queria te agradecer por tudo. Sei que nem sempre eu demonstro e as vezes até pareço distante, mas eu te amo muito e tenho muito orgulho de ser sua filha. Obrigada por sempre cuidar de mim, por me apoiar até quando vc não concordava muito com as minhas escolhas e por nunca deixar eu me sentir sozinha. Hoje com 22 anos eu consigo entender melhor vários conselhos que antes eu achava que era só "chatice de pai" kkk. Desculpa pelas vezes que fui grossa, te respondi ou não dei valor pros momentos que a gente teve juntos. Eu sei que o tempo passa muito rapido e quero aproveitar cada momento ao seu lado. Espero um dia conseguir retribuir pelo menos um pouquinho de tudo que vc fez e ainda faz por mim. Feliz dia dos pais, meu herói. Te amo demais, mesmo não falando isso sempre ❤️`;
+
 function salvarTrackingDaUrl() {
   if (typeof window === 'undefined') return {};
 
@@ -341,6 +343,7 @@ export default function Home() {
   }
 
   const dias = diasDesde(data);
+  const diasExemplo = diasDesde('2004-05-18');
   const indisponivel = enviando || processandoFotos;
 
   return (
@@ -379,8 +382,67 @@ export default function Home() {
         />
       </noscript>
 
+      <header className="intro">
+        <div className="introText">
+          <div className="introKicker">Eternize · Presente de Dia dos Pais</div>
+          <h1>Uma homenagem digital que faz seu pai <em>se emocionar</em>.</h1>
+          <p className="introSub">
+            Um presente com as fotos de vocês, a música que marca essa história e uma carta
+            escrita por você. Seu pai abre por um link (ou QR Code) e revive tudo isso.
+          </p>
+          <ol className="steps">
+            <li><span className="stepNum">1</span><span>Monte a homenagem com as fotos, a música e a sua carta.</span></li>
+            <li><span className="stepNum">2</span><span>Pague R$ 9,90 e receba na hora o link e o QR Code.</span></li>
+            <li><span className="stepNum">3</span><span>Presenteie: seu pai abre, ouve, lê… e se emociona.</span></li>
+          </ol>
+          <a className="introCta" href="#criar">Criar a minha homenagem →</a>
+          <div className="introPreco">pagamento único · <strong>R$ 9,90</strong> · você vê a prévia antes de pagar</div>
+        </div>
+
+        <div className="deviceCol">
+          <div className="device">
+            <span className="deviceNotch" aria-hidden="true" />
+            <div className="deviceScreen">
+              <section className="hero">
+                <div className="eyebrow">Uma surpresa para você</div>
+                <h2>Feliz Dia dos Pais,<br /><em>seu Fernando</em></h2>
+                <div className="photo"><img src="/exemplo/01.jpg" alt="Exemplo da homenagem" /><div className="cap">o nosso começo</div></div>
+                <div className="music"><span className="eq"><i /><i /><i /><i /></span> tocando <b>a nossa música</b></div>
+              </section>
+              <section className="counter">
+                <div className="eyebrow">nossa história</div>
+                <div className="num">{diasExemplo || '—'}</div>
+                <div className="lbl">dias sendo o meu herói</div>
+                <div className="counterSub">e cada um deles valeu a pena</div>
+              </section>
+              <section className="gallery">
+                <div className="eyebrow">momentos</div>
+                <h3>De lá pra cá</h3>
+                <p className="gallerySub">os instantes que ficaram guardados</p>
+                <div className="strip">
+                  <div className="photo small"><img src="/exemplo/02.jpg" alt="Exemplo da homenagem" /></div>
+                  <div className="photo small"><img src="/exemplo/03.jpg" alt="Exemplo da homenagem" /></div>
+                </div>
+              </section>
+              <section className="letter">
+                <div className="letterLabel">a carta</div>
+                <p>{CARTA_EXEMPLO}</p>
+              </section>
+              <section className="gallery">
+                <div className="strip">
+                  <div className="photo small"><img src="/exemplo/04.jpg" alt="Exemplo da homenagem" /></div>
+                  <div className="photo small"><img src="/exemplo/05.jpg" alt="Exemplo da homenagem" /></div>
+                </div>
+              </section>
+              <section className="closing"><h3>Te amo, <em>pai</em>.</h3></section>
+            </div>
+          </div>
+          <div className="deviceHint">👆 exemplo real — role para ver a homenagem inteira</div>
+        </div>
+      </header>
+
       <main className="page">
-        <section className="form" aria-label="Personalização da homenagem">
+        <section className="form" id="criar" aria-label="Personalização da homenagem">
           <div className="brand">Eternize</div>
           <h1>Monte a homenagem do seu pai</h1>
           <p className="sub">Preencha, confira a prévia e finalize. Leva cerca de 3 minutos.</p>
@@ -513,6 +575,7 @@ export default function Home() {
 
       <style jsx global>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
         html, body { min-height: 100%; background: #ECE4D6; }
         body { font-family: 'Nunito Sans', system-ui, sans-serif; color: #35302B; -webkit-font-smoothing: antialiased; }
         button, input, textarea { font: inherit; }
@@ -590,9 +653,39 @@ export default function Home() {
         .closing { text-align: center; padding-bottom: 74px !important; background: #F4EDE1; }
         .closing h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 500; font-size: 30px; }
 
+        .intro { max-width: 1040px; margin: 0 auto; padding: 46px 22px 6px; display: flex; flex-wrap: wrap; gap: 46px; align-items: center; }
+        .introText { flex: 1 1 360px; }
+        .introKicker { color: #D99B54; font-size: 11.5px; letter-spacing: .26em; text-transform: uppercase; font-weight: 800; margin-bottom: 16px; }
+        .introText h1 { font-family: 'Fraunces', Georgia, serif; font-weight: 500; font-size: clamp(31px, 4.6vw, 46px); line-height: 1.06; letter-spacing: -.01em; }
+        .introText h1 em { font-style: italic; color: #D99B54; }
+        .introSub { color: #6b5f50; font-size: 16px; line-height: 1.6; margin: 18px 0 26px; max-width: 460px; }
+        .steps { list-style: none; display: flex; flex-direction: column; gap: 13px; margin: 0 0 30px; }
+        .steps li { display: flex; align-items: flex-start; gap: 13px; font-size: 15px; line-height: 1.4; }
+        .stepNum { flex: none; width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(180deg,#EEC98F,#D99B54); color: #4a3212; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+        .introCta { display: inline-block; border: 0; cursor: pointer; text-decoration: none; background: linear-gradient(180deg,#EEC98F,#D99B54); color: #4a3212; font-weight: 800; font-size: 16px; padding: 16px 30px; border-radius: 12px; box-shadow: 0 12px 24px rgba(217,155,84,.28); }
+        .introPreco { color: #948A7C; font-size: 13px; margin-top: 12px; }
+        .introPreco strong { color: #35302B; }
+        .deviceCol { flex: 1 1 320px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .device { width: 300px; max-width: 84vw; background: #141414; border-radius: 42px; padding: 12px; box-shadow: 0 34px 70px rgba(53,48,43,.30); position: relative; }
+        .deviceNotch { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 120px; height: 22px; background: #141414; border-radius: 0 0 14px 14px; z-index: 3; }
+        .deviceScreen { height: 600px; overflow-y: auto; border-radius: 30px; background: #FBF8F2; }
+        .deviceScreen::-webkit-scrollbar { width: 0; height: 0; }
+        .deviceHint { color: #948A7C; font-size: 12.5px; font-weight: 700; text-align: center; }
+        .deviceScreen section { padding: 40px 24px !important; }
+        .deviceScreen .hero { min-height: auto !important; padding-top: 40px !important; }
+        .deviceScreen .hero h2 { font-size: 29px; }
+        .deviceScreen .hero .photo { margin: 24px 0 20px; }
+        .deviceScreen .photo img { width: 168px; height: 168px; }
+        .deviceScreen .photo.small img { width: 104px; height: 104px; }
+        .deviceScreen .counter .num { font-size: 56px; }
+        .deviceScreen .gallery h3 { font-size: 23px; }
+        .deviceScreen .letter p { font-size: 15.5px; line-height: 1.6; }
+        .deviceScreen .closing h3 { font-size: 26px; }
+
         @media (max-width: 840px) {
           .page { padding-top: 28px; }
           .form { position: static; max-width: none; }
+          .intro { gap: 30px; padding-top: 34px; }
         }
         @media (prefers-reduced-motion: reduce) {
           .reveal { animation: none; opacity: 1; transform: none; }
