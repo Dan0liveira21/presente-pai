@@ -234,6 +234,7 @@ export default function Home() {
   const [enviando, setEnviando] = useState(false);
   const [processandoFotos, setProcessandoFotos] = useState(false);
   const [erro, setErro] = useState('');
+  const [restante, setRestante] = useState('');
 
   useEffect(() => {
     salvarTrackingDaUrl();
@@ -243,6 +244,21 @@ export default function Home() {
       sessionStorage.removeItem('entregaUrl');
       window.location.replace(entregaPendente);
     }
+  }, []);
+
+  useEffect(() => {
+    const alvo = new Date('2026-08-10T00:00:00-03:00').getTime();
+    function tick() {
+      const diff = alvo - Date.now();
+      if (diff <= 0) { setRestante('Último dia!'); return; }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      setRestante(`${d}d ${h}h ${m}min`);
+    }
+    tick();
+    const id = setInterval(tick, 30000);
+    return () => clearInterval(id);
   }, []);
 
   async function onFotos(evento) {
@@ -396,6 +412,10 @@ export default function Home() {
             <li><span className="stepNum">3</span><span>Presenteie: seu pai abre, ouve, lê… e se emociona.</span></li>
           </ol>
           <a className="introCta" href="#criar">Criar a minha homenagem →</a>
+          <div className="introTrust">
+            <span className="tItem">🛡️ Não emocionou? Devolvemos seu dinheiro.</span>
+            {restante && <span className="tItem">⏳ Faltam {restante} para o Dia dos Pais</span>}
+          </div>
           <div className="introPreco">pagamento único · <strong>R$ 9,90</strong> · você vê a prévia antes de pagar</div>
         </div>
 
@@ -573,6 +593,31 @@ export default function Home() {
         </section>
       </main>
 
+      <section className="closer" aria-label="Por que criar sua homenagem">
+        <p className="anchor">Uma gravata ele esquece na gaveta.<br />Isso ele guarda pra sempre — <em>por R$ 9,90</em>.</p>
+
+        <div className="guarantee">
+          <span className="shield" aria-hidden="true">🛡️</span>
+          <div>
+            <strong>Garantia de emoção</strong>
+            <p>Se a homenagem não emocionar o seu pai, devolvemos o seu dinheiro. Sem burocracia.</p>
+          </div>
+        </div>
+
+        <div className="faq">
+          <h2>Perguntas frequentes</h2>
+          <details><summary>É digital? Como eu entrego pro meu pai?</summary><p>Assim que você finaliza, recebe na hora um link e um QR Code. É só mandar o link no WhatsApp do seu pai ou imprimir o QR Code num cartão para entregar na mão.</p></details>
+          <details><summary>Funciona em qualquer celular?</summary><p>Sim. Seu pai só precisa abrir o link ou apontar a câmera no QR Code — funciona em qualquer smartphone, sem instalar nada.</p></details>
+          <details><summary>A música toca mesmo?</summary><p>Toca. Você escolhe uma música do YouTube e ela começa a tocar quando ele abre a homenagem.</p></details>
+          <details><summary>E se eu errar alguma coisa?</summary><p>Você monta tudo e confere a prévia antes de pagar. Dá para ajustar as fotos, a carta e a música à vontade antes de finalizar.</p></details>
+          <details><summary>O pagamento é seguro?</summary><p>Sim. O pagamento é via Pix, em um checkout seguro, e a entrega é imediata após a confirmação.</p></details>
+          <details><summary>Por quanto tempo a homenagem fica no ar?</summary><p>O acesso é de 1 ano. Se quiser que fique para sempre, há a opção de acesso vitalício no checkout.</p></details>
+        </div>
+
+        <a className="closerCta" href="#criar">Criar a minha homenagem →</a>
+        {restante && <div className="closerUrgency">⏳ Faltam {restante} para o Dia dos Pais</div>}
+      </section>
+
       <style jsx global>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
@@ -681,6 +726,27 @@ export default function Home() {
         .deviceScreen .gallery h3 { font-size: 23px; }
         .deviceScreen .letter p { font-size: 15.5px; line-height: 1.6; }
         .deviceScreen .closing h3 { font-size: 26px; }
+
+        .introTrust { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 16px; }
+        .introTrust .tItem { font-size: 13px; font-weight: 700; color: #7a6a56; }
+
+        .closer { max-width: 720px; margin: 0 auto; padding: 24px 22px 84px; text-align: center; }
+        .anchor { font-family: 'Fraunces', Georgia, serif; font-weight: 500; font-size: clamp(24px, 4vw, 32px); line-height: 1.2; color: #35302B; margin: 10px 0 34px; }
+        .anchor em { font-style: italic; color: #D99B54; }
+        .guarantee { display: flex; align-items: flex-start; gap: 14px; text-align: left; max-width: 470px; margin: 0 auto 42px; background: #FFF; border: 1px solid #eadfce; border-radius: 16px; padding: 20px 22px; box-shadow: 0 12px 30px rgba(53,48,43,.08); }
+        .guarantee .shield { font-size: 26px; line-height: 1; }
+        .guarantee strong { display: block; font-size: 16px; margin-bottom: 4px; }
+        .guarantee p { color: #6b5f50; font-size: 14px; line-height: 1.5; }
+        .faq { text-align: left; max-width: 560px; margin: 0 auto 40px; }
+        .faq h2 { font-family: 'Fraunces', Georgia, serif; font-weight: 500; font-size: 26px; text-align: center; margin-bottom: 20px; }
+        .faq details { border-bottom: 1px solid #e6dccb; }
+        .faq summary { cursor: pointer; list-style: none; padding: 16px 32px 16px 4px; font-weight: 700; font-size: 15px; position: relative; }
+        .faq summary::-webkit-details-marker { display: none; }
+        .faq summary::after { content: '+'; position: absolute; right: 6px; top: 13px; font-size: 22px; color: #D99B54; font-weight: 800; }
+        .faq details[open] summary::after { content: '–'; }
+        .faq details p { color: #6b5f50; font-size: 14.5px; line-height: 1.6; padding: 0 4px 16px; }
+        .closerCta { display: inline-block; text-decoration: none; border: 0; cursor: pointer; background: linear-gradient(180deg,#EEC98F,#D99B54); color: #4a3212; font-weight: 800; font-size: 17px; padding: 17px 34px; border-radius: 12px; box-shadow: 0 12px 24px rgba(217,155,84,.28); }
+        .closerUrgency { margin-top: 14px; font-size: 13.5px; font-weight: 700; color: #7a6a56; }
 
         @media (max-width: 840px) {
           .page { padding-top: 28px; }
