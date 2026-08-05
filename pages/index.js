@@ -254,10 +254,11 @@ export default function Home() {
       const d = Math.floor(diff / 86400000);
       const h = Math.floor((diff % 86400000) / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
-      setRestante(`${d}d ${h}h ${m}min`);
+      const s = Math.floor((diff % 60000) / 1000);
+      setRestante(`${d}d ${h}h ${m}min ${s}s`);
     }
     tick();
-    const id = setInterval(tick, 30000);
+    const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, []);
 
@@ -398,6 +399,8 @@ export default function Home() {
         />
       </noscript>
 
+      <div className="urgencyBar" role="status">⏳ Faltam <strong>{restante || '…'}</strong> para o Dia dos Pais</div>
+
       <header className="intro">
         <div className="introText">
           <div className="introKicker">Eternize · Presente de Dia dos Pais</div>
@@ -414,7 +417,6 @@ export default function Home() {
           <a className="introCta" href="#criar">Criar a minha homenagem →</a>
           <div className="introTrust">
             <span className="tItem">🛡️ Não emocionou? Devolvemos seu dinheiro.</span>
-            {restante && <span className="tItem">⏳ Faltam {restante} para o Dia dos Pais</span>}
           </div>
           <div className="introPreco">pagamento único · <strong>R$ 9,90</strong> · você vê a prévia antes de pagar</div>
         </div>
@@ -457,7 +459,7 @@ export default function Home() {
               <section className="closing"><h3>Te amo, <em>pai</em>.</h3></section>
             </div>
           </div>
-          <div className="deviceHint">👆 exemplo real — role para ver a homenagem inteira</div>
+          <div className="deviceHint">👆 Exemplo real — role para ver a homenagem completa</div>
         </div>
       </header>
 
@@ -627,12 +629,15 @@ export default function Home() {
       `}</style>
       <style jsx>{`
         .page { display: flex; flex-wrap: wrap; gap: 42px; max-width: 1040px; margin: 0 auto; padding: 44px 22px 70px; align-items: flex-start; }
-        .form { flex: 1 1 360px; max-width: 470px; position: sticky; top: 28px; padding: 8px 0; }
+        .form { flex: 1 1 360px; max-width: 470px; position: sticky; top: 62px; padding: 8px 0; }
         .brand { color: #D99B54; font-size: 11.5px; letter-spacing: .3em; text-transform: uppercase; font-weight: 800; margin-bottom: 18px; }
         .form h1 { font-family: 'Fraunces', Georgia, serif; font-weight: 500; font-size: clamp(30px, 4vw, 39px); line-height: 1.08; }
         .sub { color: #948A7C; line-height: 1.55; margin: 10px 0 28px; }
         label { display: block; font-weight: 700; font-size: 14px; margin-bottom: 17px; }
         input, textarea { display: block; width: 100%; margin-top: 7px; padding: 13px 14px; border: 1px solid #ddd3c4; border-radius: 11px; background: #FFF; color: #35302B; outline: none; transition: border-color .2s, box-shadow .2s; }
+        input[type="file"] { padding: 7px; cursor: pointer; color: #948A7C; font-size: 13.5px; }
+        input[type="file"]::file-selector-button, input[type="file"]::-webkit-file-upload-button { border: 0; margin-right: 12px; padding: 11px 18px; border-radius: 8px; background: linear-gradient(180deg,#EEC98F,#D99B54); color: #4a3212; font-weight: 800; font-family: inherit; font-size: 14px; cursor: pointer; transition: filter .2s; }
+        input[type="file"]:hover::file-selector-button, input[type="file"]:hover::-webkit-file-upload-button { filter: brightness(1.04); }
         input:focus, textarea:focus { border-color: #D99B54; box-shadow: 0 0 0 3px rgba(217,155,84,.14); }
         textarea { resize: vertical; line-height: 1.5; }
         small { display: block; color: #948A7C; font-weight: 400; margin-top: 6px; line-height: 1.35; }
@@ -698,6 +703,8 @@ export default function Home() {
         .closing { text-align: center; padding-bottom: 74px !important; background: #F4EDE1; }
         .closing h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 500; font-size: 30px; }
 
+        .urgencyBar { position: sticky; top: 0; z-index: 60; background: #DD7A5E; color: #FFF8F0; text-align: center; font-weight: 800; font-size: 13.5px; letter-spacing: .01em; padding: 11px 14px; box-shadow: 0 2px 10px rgba(53,48,43,.12); }
+        .urgencyBar strong { font-weight: 800; font-variant-numeric: tabular-nums; }
         .intro { max-width: 1040px; margin: 0 auto; padding: 46px 22px 6px; display: flex; flex-wrap: wrap; gap: 46px; align-items: center; }
         .introText { flex: 1 1 360px; }
         .introKicker { color: #D99B54; font-size: 11.5px; letter-spacing: .26em; text-transform: uppercase; font-weight: 800; margin-bottom: 16px; }
@@ -707,15 +714,15 @@ export default function Home() {
         .steps { list-style: none; display: flex; flex-direction: column; gap: 13px; margin: 0 0 30px; }
         .steps li { display: flex; align-items: flex-start; gap: 13px; font-size: 15px; line-height: 1.4; }
         .stepNum { flex: none; width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(180deg,#EEC98F,#D99B54); color: #4a3212; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; }
-        .introCta { display: inline-block; border: 0; cursor: pointer; text-decoration: none; background: linear-gradient(180deg,#EEC98F,#D99B54); color: #4a3212; font-weight: 800; font-size: 16px; padding: 16px 30px; border-radius: 12px; box-shadow: 0 12px 24px rgba(217,155,84,.28); }
-        .introPreco { color: #948A7C; font-size: 13px; margin-top: 12px; }
+        .introCta { display: block; width: fit-content; margin: 8px auto 4px; border: 0; cursor: pointer; text-decoration: none; background: linear-gradient(180deg,#EEC98F,#D99B54); color: #4a3212; font-weight: 800; font-size: 16px; padding: 16px 30px; border-radius: 12px; box-shadow: 0 12px 24px rgba(217,155,84,.28); }
+        .introPreco { color: #948A7C; font-size: 13px; margin-top: 12px; text-align: center; }
         .introPreco strong { color: #35302B; }
         .deviceCol { flex: 1 1 320px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
         .device { width: 300px; max-width: 84vw; background: #141414; border-radius: 42px; padding: 12px; box-shadow: 0 34px 70px rgba(53,48,43,.30); position: relative; }
         .deviceNotch { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 120px; height: 22px; background: #141414; border-radius: 0 0 14px 14px; z-index: 3; }
         .deviceScreen { height: 600px; overflow-y: auto; border-radius: 30px; background: #FBF8F2; }
         .deviceScreen::-webkit-scrollbar { width: 0; height: 0; }
-        .deviceHint { color: #948A7C; font-size: 12.5px; font-weight: 700; text-align: center; }
+        .deviceHint { display: inline-flex; align-items: center; gap: 6px; background: #DD7A5E; color: #FFF8F0; font-size: 13px; font-weight: 800; text-align: center; padding: 9px 18px; border-radius: 100px; box-shadow: 0 8px 18px rgba(221,122,94,.28); }
         .deviceScreen section { padding: 40px 24px !important; }
         .deviceScreen .hero { min-height: auto !important; padding-top: 40px !important; }
         .deviceScreen .hero h2 { font-size: 29px; }
@@ -727,7 +734,7 @@ export default function Home() {
         .deviceScreen .letter p { font-size: 15.5px; line-height: 1.6; }
         .deviceScreen .closing h3 { font-size: 26px; }
 
-        .introTrust { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 16px; }
+        .introTrust { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 16px; }
         .introTrust .tItem { font-size: 13px; font-weight: 700; color: #7a6a56; }
 
         .closer { max-width: 720px; margin: 0 auto; padding: 24px 22px 84px; text-align: center; }
