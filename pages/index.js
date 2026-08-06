@@ -516,6 +516,7 @@ export default function Home() {
           <button className="cta" type="button" onClick={pagar} disabled={indisponivel}>
             {enviando ? 'Preparando seu presente...' : processandoFotos ? 'Preparando as fotos...' : 'Finalizar e receber meu QR Code'}
           </button>
+          <div className="nextStep">🔒 Próximo passo: pagamento seguro (Pix, cartão ou Google&nbsp;Pay). Leva 1 minuto e a entrega é na hora.</div>
           <div className="preco">pagamento único · <strong>R$ 9,90</strong> · acesso por 1 ano</div>
         </section>
 
@@ -647,6 +648,7 @@ export default function Home() {
         .cta { width: 100%; border: 0; cursor: pointer; margin-top: 4px; padding: 16px; background: linear-gradient(180deg,#EEC98F,#D99B54); color: #4a3212; font-weight: 800; font-size: 16px; border-radius: 12px; box-shadow: 0 12px 24px rgba(217,155,84,.28); }
         .cta:disabled, .previewCta:disabled { opacity: .6; cursor: default; }
         .preco { text-align: center; color: #948A7C; font-size: 13px; margin-top: 11px; }
+        .nextStep { margin-top: 13px; text-align: center; font-size: 12.5px; line-height: 1.5; color: #7a6a56; font-weight: 600; max-width: 380px; margin-left: auto; margin-right: auto; }
         .preco strong { color: #35302B; }
 
         .stage { flex: 1 1 430px; display: flex; justify-content: center; }
