@@ -104,6 +104,25 @@ function desenharCover(ctx, imagem, x, y, largura, altura, raio = 0) {
   ctx.restore();
 }
 
+function desenharContain(ctx, imagem, x, y, largura, altura, raio = 0, corFundo = '#FFFFFF') {
+  ctx.save();
+  if (raio) {
+    caminhoArredondado(ctx, x, y, largura, altura, raio);
+    ctx.clip();
+  }
+  if (corFundo) {
+    ctx.fillStyle = corFundo;
+    ctx.fillRect(x, y, largura, altura);
+  }
+  const escala = Math.min(largura / imagem.width, altura / imagem.height);
+  const destinoLargura = imagem.width * escala;
+  const destinoAltura = imagem.height * escala;
+  const destinoX = x + (largura - destinoLargura) / 2;
+  const destinoY = y + (altura - destinoAltura) / 2;
+  ctx.drawImage(imagem, destinoX, destinoY, destinoLargura, destinoAltura);
+  ctx.restore();
+}
+
 function linhasDoTexto(ctx, texto, larguraMaxima, maxLinhas = 3) {
   const palavras = String(texto || '').trim().split(/\s+/).filter(Boolean);
   const linhas = [];
@@ -470,14 +489,14 @@ export default function Entrega() {
       ctx.shadowBlur = 24;
       ctx.shadowOffsetY = 10;
       ctx.fillStyle = '#FFFFFF';
-      caminhoArredondado(ctx, 130, 500, 820, 460, 30);
+      caminhoArredondado(ctx, 290, 500, 500, 500, 30);
       ctx.fill();
       ctx.restore();
       ctx.strokeStyle = '#E2B27D';
       ctx.lineWidth = 3;
-      caminhoArredondado(ctx, 130, 500, 820, 460, 30);
+      caminhoArredondado(ctx, 290, 500, 500, 500, 30);
       ctx.stroke();
-      desenharCover(ctx, foto, 148, 518, 784, 424, 22);
+      desenharContain(ctx, foto, 308, 518, 464, 464, 22);
 
       // Divisor decorativo. A mensagem do formulário não aparece no cartão.
       ctx.fillStyle = '#D9656A';
